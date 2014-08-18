@@ -1,5 +1,7 @@
 package com.vinumeris.updatefx;
 
+import com.google.common.hash.Hashing;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,5 +20,9 @@ public class Utils {
 
     public static void println(String s, Object... args) {
         System.out.println(String.format(s, args));
+    }
+
+    public static byte[] sha256(byte[] bits) {
+        return Hashing.sha256().hashBytes(bits).asBytes();
     }
 }

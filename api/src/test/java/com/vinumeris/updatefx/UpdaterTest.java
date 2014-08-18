@@ -4,17 +4,19 @@ import com.google.common.hash.Hashing;
 import com.google.protobuf.ByteString;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
+import org.bouncycastle.math.ec.ECPoint;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.FileNotFoundException;
+import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.security.SecureRandom;
+import java.security.SignatureException;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -33,6 +35,9 @@ public class UpdaterTest {
     private String baseURL;
 
     private long workDone, workMax;
+
+    private List<BigInteger> privKeys;
+    private List<ECPoint> pubKeys;
 
     @Before
     public void setUp() throws Exception {
@@ -59,11 +64,18 @@ public class UpdaterTest {
 
         dir = createTempDirectory("updatefx");
         baseURL = "http://localhost:" + HTTP_LOCAL_TEST_PORT + SERVER_PATH;
+
+        privKeys = new LinkedList<>();
+        SecureRandom rnd = new SecureRandom();
+        for (int i = 0; i < 3; i++) {
+            privKeys.add(new BigInteger(256, rnd));
+        }
+        pubKeys = Crypto.privsToPubs(privKeys);
     }
 
     public class TestUpdater extends Updater {
         public TestUpdater(String updateBaseURL, String userAgent, int currentVersion, Path localUpdatesDir, Path pathToOrigJar) {
-            super(updateBaseURL, userAgent, currentVersion, localUpdatesDir, pathToOrigJar);
+            super(updateBaseURL, userAgent, currentVersion, localUpdatesDir, pathToOrigJar, pubKeys, 2);
         }
 
         @Override
@@ -85,6 +97,11 @@ public class UpdaterTest {
     }
 
     private void configureIndex(byte[]... hash) {
+        UFXProtocol.SignedUpdates.Builder signedUpdates = buildIndex(hash);
+        paths.put("/index", signedUpdates.build().toByteArray());
+    }
+
+    private UFXProtocol.SignedUpdates.Builder buildIndex(byte[]... hash) {
         UFXProtocol.SignedUpdates.Builder signedUpdates = UFXProtocol.SignedUpdates.newBuilder();
         UFXProtocol.Updates.Builder updates = UFXProtocol.Updates.newBuilder();
         for (int i = 0; i < hash.length; i++) {
@@ -99,8 +116,12 @@ public class UpdaterTest {
                 update.setPatchSize(0);
             updates.addUpdates(update);
         }
-        signedUpdates.setUpdates(updates.build().toByteString());
-        paths.put("/index", signedUpdates.build().toByteArray());
+        ByteString bytes = updates.build().toByteString();
+        signedUpdates.setUpdates(bytes);
+        String message = Hashing.sha256().hashBytes(bytes.toByteArray()).toString();
+        signedUpdates.addSignatures(Crypto.signMessage(message, privKeys.get(0)));
+        signedUpdates.addSignatures(Crypto.signMessage(message, privKeys.get(1)));
+        return signedUpdates;
     }
 
     @Test
@@ -125,6 +146,56 @@ public class UpdaterTest {
         updater.call();
     }
 
+    @Test(expected = Updater.Ex.InsufficientSigners.class)
+    public void insufficientSigs() throws Exception {
+        byte[] fakePatch = new byte[1024];
+        Arrays.fill(fakePatch, (byte) 0x42);
+        paths.put("/2.jar.bpatch", fakePatch);
+        UFXProtocol.SignedUpdates.Builder builder = buildIndex("wrong".getBytes());
+        builder.clearSignatures();
+        paths.put("/index", builder.build().toByteArray());
+        updater = new TestUpdater(baseURL, "UnitTest", 1, dir, null);
+        updater.call();
+    }
+
+    @Test(expected = Updater.Ex.InsufficientSigners.class)
+    public void unknownSig() throws Exception {
+        byte[] fakePatch = new byte[1024];
+        Arrays.fill(fakePatch, (byte) 0x42);
+        paths.put("/2.jar.bpatch", fakePatch);
+        UFXProtocol.SignedUpdates.Builder builder = buildIndex("wrong".getBytes());
+        BigInteger evilKey = new BigInteger(256, new SecureRandom());
+        builder.setSignatures(0, Crypto.signMessage("msg", evilKey));
+        paths.put("/index", builder.build().toByteArray());
+        updater = new TestUpdater(baseURL, "UnitTest", 1, dir, null);
+        updater.call();
+    }
+
+    @Test(expected = Updater.Ex.InsufficientSigners.class)
+    public void replayedSig() throws Exception {
+        byte[] fakePatch = new byte[1024];
+        Arrays.fill(fakePatch, (byte) 0x42);
+        paths.put("/2.jar.bpatch", fakePatch);
+        UFXProtocol.SignedUpdates.Builder builder = buildIndex("wrong".getBytes());
+        builder.setSignatures(0, Crypto.signMessage("hash from some other project", privKeys.get(0)));
+        paths.put("/index", builder.build().toByteArray());
+        updater = new TestUpdater(baseURL, "UnitTest", 1, dir, null);
+        updater.call();
+    }
+
+    @Test(expected = SignatureException.class)
+    public void badSig() throws Exception {
+        byte[] fakePatch = new byte[1024];
+        Arrays.fill(fakePatch, (byte) 0x42);
+        paths.put("/2.jar.bpatch", fakePatch);
+        UFXProtocol.SignedUpdates.Builder builder = buildIndex("wrong".getBytes());
+        builder.setSignatures(0, "bzzzz");
+        paths.put("/index", builder.build().toByteArray());
+        updater = new TestUpdater(baseURL, "UnitTest", 1, dir, null);
+        updater.call();
+    }
+
+
     @Test
     public void updateRun() throws Exception {
         Path working = dir.resolve("working");
@@ -146,16 +217,12 @@ public class UpdaterTest {
         byte[] bpatch2bits = readAllBytes(bpatch3);
         paths.put("/2.jar.bpatch", bpatch1bits);
         paths.put("/3.jar.bpatch", bpatch2bits);
-        configureIndex(sha256(bpatch1bits), sha256(bpatch2bits));
+        configureIndex(Utils.sha256(bpatch1bits), Utils.sha256(bpatch2bits));
         updater = new TestUpdater(baseURL, "UnitTest", 1, dir, baseJar);
         updater.call();
         assertEquals(1064, workDone);
         assertEquals(1064, workMax);
         byte[] bits3 = Files.readAllBytes(dir.resolve("3.jar"));
         assertArrayEquals(baseFile, bits3);
-    }
-
-    private static byte[] sha256(byte[] bpatch1bits) {
-        return Hashing.sha256().hashBytes(bpatch1bits).asBytes();
     }
 }

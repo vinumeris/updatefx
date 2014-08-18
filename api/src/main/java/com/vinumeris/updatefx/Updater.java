@@ -7,6 +7,7 @@ import com.google.common.io.ByteStreams;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.nothome.delta.GDiffPatcher;
 import javafx.concurrent.Task;
+import org.bouncycastle.math.ec.ECPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,9 +20,8 @@ import java.net.URISyntaxException;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.security.SignatureException;
+import java.util.*;
 
 /**
  * An updater does all the work of downloading, checking and applying updates on a background thread. It has
@@ -35,16 +35,20 @@ public class Updater extends Task<UpdateSummary> {
     private final int currentVersion;
     private final Path localUpdatesDir;
     private final Path pathToOrigJar;
+    private final List<ECPoint> pubkeys;
 
     private long totalBytesDownloaded;
+    private final int requiredSigningThreshold;
 
     public Updater(String updateBaseURL, String userAgent, int currentVersion, Path localUpdatesDir,
-                   Path pathToOrigJar) {
+                   Path pathToOrigJar, List<ECPoint> pubkeys, int requiredSigningThreshold) {
         this.updateBaseURL = updateBaseURL;
         this.userAgent = userAgent;
         this.currentVersion = currentVersion;
         this.localUpdatesDir = localUpdatesDir;
         this.pathToOrigJar = pathToOrigJar;
+        this.pubkeys = pubkeys;
+        this.requiredSigningThreshold = requiredSigningThreshold;
     }
 
     @Override
@@ -72,7 +76,7 @@ public class Updater extends Task<UpdateSummary> {
         return connection;
     }
 
-    private void processSignedIndex(UFXProtocol.SignedUpdates signedUpdates) throws IOException, URISyntaxException, Ex {
+    private void processSignedIndex(UFXProtocol.SignedUpdates signedUpdates) throws IOException, URISyntaxException, Ex, SignatureException {
         UFXProtocol.Updates updates = validateSignatures(signedUpdates);
         LinkedList<UFXProtocol.Update> applicableUpdates = new LinkedList<>();
         long bytesToFetch = 0;
@@ -152,12 +156,29 @@ public class Updater extends Task<UpdateSummary> {
         return new HashingOutputStream(Hashing.sha256(), new BufferedOutputStream(Files.newOutputStream(outfile)));
     }
 
-    private UFXProtocol.Updates validateSignatures(UFXProtocol.SignedUpdates updates) throws InvalidProtocolBufferException {
-        // TODO: Actually validate signatures here.
-        return UFXProtocol.Updates.parseFrom(updates.getUpdates());
+    private UFXProtocol.Updates validateSignatures(UFXProtocol.SignedUpdates updates) throws Ex, InvalidProtocolBufferException, SignatureException {
+        String message = Hashing.sha256().hashBytes(updates.getUpdates().toByteArray()).toString();
+        int validSigs = 0;
+        Set<ECPoint> keys = new HashSet<>(pubkeys);
+        for (String s : updates.getSignaturesList()) {
+            ECPoint keyFound = Crypto.signedMessageToKey(message, s);
+            if (keyFound != null) {
+                if (keys.contains(keyFound)) {
+                    keys.remove(keyFound);   // Don't allow the same key to sign more than once.
+                    validSigs++;
+                } else {
+                    log.warn("Found signature by unrecognised key: {}", keyFound);
+                }
+            }
+        }
+        if (validSigs >= requiredSigningThreshold)
+            return UFXProtocol.Updates.parseFrom(updates.getUpdates());
+        else
+            throw new Ex.InsufficientSigners();
     }
 
     public static class Ex extends Exception {
         public static class BadUpdateHash extends Ex {}
+        public static class InsufficientSigners extends Ex {}
     }
 }
