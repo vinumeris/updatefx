@@ -1,10 +1,11 @@
-package updatefx;
+package com.vinumeris.updatefx;
 
 import com.google.common.hash.Hashing;
 import com.google.common.hash.HashingOutputStream;
 import com.google.common.io.BaseEncoding;
 import com.google.common.io.ByteStreams;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.nothome.delta.GDiffPatcher;
 import javafx.concurrent.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,20 +34,23 @@ public class Updater extends Task<UpdateSummary> {
     private final String userAgent;
     private final int currentVersion;
     private final Path localUpdatesDir;
+    private final Path pathToOrigJar;
 
     private long totalBytesDownloaded;
 
-    public Updater(String updateBaseURL, String userAgent, int currentVersion, Path localUpdatesDir) {
+    public Updater(String updateBaseURL, String userAgent, int currentVersion, Path localUpdatesDir,
+                   Path pathToOrigJar) {
         this.updateBaseURL = updateBaseURL;
         this.userAgent = userAgent;
         this.currentVersion = currentVersion;
         this.localUpdatesDir = localUpdatesDir;
+        this.pathToOrigJar = pathToOrigJar;
     }
 
     @Override
     protected UpdateSummary call() throws Exception {
         UFXProtocol.SignedUpdates signedUpdates = downloadSignedIndex();
-        processSignedUpdates(signedUpdates);
+        processSignedIndex(signedUpdates);
         return new UpdateSummary();
     }
 
@@ -68,7 +72,7 @@ public class Updater extends Task<UpdateSummary> {
         return connection;
     }
 
-    private void processSignedUpdates(UFXProtocol.SignedUpdates signedUpdates) throws IOException, URISyntaxException, Ex {
+    private void processSignedIndex(UFXProtocol.SignedUpdates signedUpdates) throws IOException, URISyntaxException, Ex {
         UFXProtocol.Updates updates = validateSignatures(signedUpdates);
         LinkedList<UFXProtocol.Update> applicableUpdates = new LinkedList<>();
         long bytesToFetch = 0;
@@ -79,7 +83,25 @@ public class Updater extends Task<UpdateSummary> {
             }
         }
         log.info("Found {} applicable updates totalling {} bytes", applicableUpdates.size(), bytesToFetch);
-        downloadUpdates(applicableUpdates, bytesToFetch);
+        List<Path> downloadedUpdates = downloadUpdates(applicableUpdates, bytesToFetch);
+        processDownloadedUpdates(applicableUpdates, downloadedUpdates);
+    }
+
+    private void processDownloadedUpdates(List<UFXProtocol.Update> updates, List<Path> files) throws IOException {
+        // Go through the list and apply each patch (it's an xdelta) to the previous version to create a new full
+        // blown JAR, which is then moved into the updates base dir. The first update is special and is applied
+        // to the base jar that came with the downloaded app.
+        int cursor = 0;
+        for (Path path : files) {
+            UFXProtocol.Update update = updates.get(cursor);
+            Path base = pathToOrigJar;
+            if (update.getVersion() > 2)
+                base = localUpdatesDir.resolve((update.getVersion() - 1) + ".jar");
+            Path next = localUpdatesDir.resolve(update.getVersion() + ".jar");
+            log.info("Applying patch {} to {}", path, base);
+            new GDiffPatcher().patch(base.toFile(), path.toFile(), next.toFile());
+            cursor++;
+        }
     }
 
     private List<Path> downloadUpdates(LinkedList<UFXProtocol.Update> updates, long bytesToFetch) throws URISyntaxException, IOException, Ex {
@@ -106,7 +128,7 @@ public class Updater extends Task<UpdateSummary> {
                 Path tmpDir = localUpdatesDir.resolve("tmp");
                 if (!Files.isDirectory(tmpDir))
                     Files.createDirectory(tmpDir);
-                Path outfile = tmpDir.resolve(update.getVersion() + ".jar");
+                Path outfile = tmpDir.resolve(update.getVersion() + ".jar.bpatch");
                 log.info(" ... saving to {}", outfile);
                 byte[] sha256;
                 try (HashingOutputStream savedFile = hashingFileStream(outfile)) {

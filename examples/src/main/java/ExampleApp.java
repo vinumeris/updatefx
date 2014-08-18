@@ -1,5 +1,5 @@
-import updatefx.AppDirectory;
-import updatefx.Bootstrap;
+import com.vinumeris.updatefx.AppDirectory;
+import com.vinumeris.updatefx.Bootstrap;
 
 import java.io.IOException;
 

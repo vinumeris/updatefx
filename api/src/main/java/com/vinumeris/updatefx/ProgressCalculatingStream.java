@@ -1,4 +1,4 @@
-package updatefx;
+package com.vinumeris.updatefx;
 
 import java.io.FilterInputStream;
 import java.io.IOException;

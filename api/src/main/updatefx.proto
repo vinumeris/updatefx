@@ -2,7 +2,7 @@
 
 package updatefx;
 
-option java_package = "updatefx";
+option java_package = "com.vinumeris.updatefx";
 option java_outer_classname = "UFXProtocol";
 
 message Update {

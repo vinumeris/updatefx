@@ -1,4 +1,4 @@
-package updatefx;
+package com.vinumeris.updatefx;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,9 +12,6 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * Given a directory, select the jar with the highest version number, load it and pass control to it.
@@ -66,7 +63,7 @@ public class Bootstrap {
             throw new IllegalArgumentException("Not a directory: " + updatesDirectory);
         int bestUpdateSeen = -1;
         Path bestJarSeen = null;
-        for (Path path : listDir(updatesDirectory)) {
+        for (Path path : Utils.listDir(updatesDirectory)) {
             if (path.getFileName().toString().endsWith(".jar")) {
                 log.info("Considering {} for bootstrap", path);
                 String fn = path.getFileName().toString();
@@ -85,13 +82,5 @@ public class Bootstrap {
         if (bestJarSeen == null)
             bestJarSeen = origJarPath;
         return bestJarSeen;
-    }
-
-    private static List<Path> listDir(Path dir) throws IOException {
-        List<Path> contents = new LinkedList<>();
-        try (Stream<Path> list = Files.list(dir)) {
-            list.forEach(contents::add);
-        }
-        return contents;
     }
 }
