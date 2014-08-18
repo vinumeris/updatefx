@@ -1,0 +1,32 @@
+// UpdateFX. Copyright 2014 Vinumeris GmbH
+
+package updatefx;
+
+option java_package = "updatefx";
+option java_outer_classname = "UFXProtocol";
+
+message Update {
+    // All URLs for this update are considered to be equivalent. One will be chosen at random.
+    repeated string urls = 1;
+    required bytes hash = 2;   // SHA256
+
+    // Monotonically increasing integer for which higher versions are newer.
+    required uint32 version = 3;
+
+    // Size in bytes of the file pointed to by URLs.
+    required uint32 patch_size = 4;
+}
+
+message Updates {
+    repeated Update updates = 1;
+}
+
+message SignedUpdates {
+    // Serialized Updates message.
+    required bytes updates = 1;
+
+    // Bitcoin-style message signatures where the message is SHA256(updates) in textual form. The recovered keys
+    // are checked against the hard-coded list of allowed signers and there must be sufficient to reach the (hard
+    // coded) threshold.
+    repeated string signatures = 2;
+}
