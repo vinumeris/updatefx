@@ -11,5 +11,6 @@
     <modules>
         <module>examples</module>
         <module>api</module>
+        <module>app</module>
     </modules>
 </project>

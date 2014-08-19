@@ -4,7 +4,7 @@ import com.vinumeris.updatefx.Bootstrap;
 import java.io.IOException;
 
 public class ExampleApp {
-    public static int VERSION = 1;
+    public static int VERSION = 2;
 
     public static void main(String[] args) throws IOException {
         AppDirectory.initAppDir("UpdateFX Example App");

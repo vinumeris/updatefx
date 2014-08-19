@@ -21,17 +21,18 @@ import static java.nio.file.Files.*;
  */
 public class DeltaCalculator {
     public static void main(String[] args) throws IOException {
-        Path directory = Paths.get(args[0]);
+        Path inDir = Paths.get(args[0]);
+        Path outDir = args.length > 1 ? Paths.get(args[1]) : inDir;
         int num = 2;
         while (true) {
-            Path cur = directory.resolve(num + ".jar");
-            Path prev = directory.resolve((num - 1) + ".jar");
+            Path cur = inDir.resolve(num + ".jar");
+            Path prev = inDir.resolve((num - 1) + ".jar");
             if (!(isRegularFile(cur) && isRegularFile(prev))) {
                 println("No more files found.");
                 break;
             }
             println("Calculating delta between %s and %s", cur, prev);
-            Path deltaFile = Paths.get(cur.toAbsolutePath().toString() + ".bpatch");
+            Path deltaFile = outDir.resolve(cur.getFileName().toString() + ".bpatch");
             deleteIfExists(deltaFile);
             try (OutputStream stream = new BufferedOutputStream(newOutputStream(deltaFile, StandardOpenOption.CREATE_NEW))) {
                 GDiffWriter writer = new GDiffWriter(stream);

@@ -219,10 +219,11 @@ public class UpdaterTest {
         paths.put("/3.jar.bpatch", bpatch2bits);
         configureIndex(Utils.sha256(bpatch1bits), Utils.sha256(bpatch2bits));
         updater = new TestUpdater(baseURL, "UnitTest", 1, dir, baseJar);
-        updater.call();
+        UpdateSummary summary = updater.call();
         assertEquals(1064, workDone);
         assertEquals(1064, workMax);
         byte[] bits3 = Files.readAllBytes(dir.resolve("3.jar"));
         assertArrayEquals(baseFile, bits3);
+        assertEquals(3, summary.newVersion);
     }
 }

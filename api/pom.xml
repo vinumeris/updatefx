@@ -50,6 +50,12 @@
             <artifactId>trove4j</artifactId>
             <version>3.0.3</version>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
         <!-- when used in an app that uses bitcoinj, this will duplicate the entire bouncy/spongy castle lib,
              however Maven Shade should blow away virtually all of this code so it doesn't matter much. -->
         <dependency>

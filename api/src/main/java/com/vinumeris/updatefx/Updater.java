@@ -1,5 +1,6 @@
 package com.vinumeris.updatefx;
 
+import com.google.common.base.Preconditions;
 import com.google.common.hash.Hashing;
 import com.google.common.hash.HashingOutputStream;
 import com.google.common.io.BaseEncoding;
@@ -36,9 +37,10 @@ public class Updater extends Task<UpdateSummary> {
     private final Path localUpdatesDir;
     private final Path pathToOrigJar;
     private final List<ECPoint> pubkeys;
+    private final int requiredSigningThreshold;
 
     private long totalBytesDownloaded;
-    private final int requiredSigningThreshold;
+    private int newHighestVersion;
 
     public Updater(String updateBaseURL, String userAgent, int currentVersion, Path localUpdatesDir,
                    Path pathToOrigJar, List<ECPoint> pubkeys, int requiredSigningThreshold) {
@@ -49,13 +51,15 @@ public class Updater extends Task<UpdateSummary> {
         this.pathToOrigJar = pathToOrigJar;
         this.pubkeys = pubkeys;
         this.requiredSigningThreshold = requiredSigningThreshold;
+
+        newHighestVersion = currentVersion;
     }
 
     @Override
     protected UpdateSummary call() throws Exception {
         UFXProtocol.SignedUpdates signedUpdates = downloadSignedIndex();
         processSignedIndex(signedUpdates);
-        return new UpdateSummary();
+        return new UpdateSummary(newHighestVersion);
     }
 
     private UFXProtocol.SignedUpdates downloadSignedIndex() throws IOException, URISyntaxException {
@@ -104,6 +108,8 @@ public class Updater extends Task<UpdateSummary> {
             Path next = localUpdatesDir.resolve(update.getVersion() + ".jar");
             log.info("Applying patch {} to {}", path, base);
             new GDiffPatcher().patch(base.toFile(), path.toFile(), next.toFile());
+            Preconditions.checkState(update.getVersion() > newHighestVersion);
+            newHighestVersion = update.getVersion();
             cursor++;
         }
     }
