@@ -44,7 +44,7 @@ public class Updater extends Task<UpdateSummary> {
 
     public Updater(String updateBaseURL, String userAgent, int currentVersion, Path localUpdatesDir,
                    Path pathToOrigJar, List<ECPoint> pubkeys, int requiredSigningThreshold) {
-        this.updateBaseURL = updateBaseURL;
+        this.updateBaseURL = updateBaseURL.endsWith("/") ? updateBaseURL.substring(0, updateBaseURL.length() - 1) : updateBaseURL;
         this.userAgent = userAgent;
         this.currentVersion = currentVersion;
         this.localUpdatesDir = localUpdatesDir;
@@ -139,6 +139,7 @@ public class Updater extends Task<UpdateSummary> {
                 if (!Files.isDirectory(tmpDir))
                     Files.createDirectory(tmpDir);
                 Path outfile = tmpDir.resolve(update.getVersion() + ".jar.bpatch");
+                Files.deleteIfExists(outfile);
                 log.info(" ... saving to {}", outfile);
                 byte[] sha256;
                 try (HashingOutputStream savedFile = hashingFileStream(outfile)) {

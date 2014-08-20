@@ -3,7 +3,6 @@ package com.vinumeris.updatefx;
 import com.google.common.base.Charsets;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInts;
-import com.sun.istack.internal.Nullable;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.asn1.x9.X9IntegerConverter;
 import org.bouncycastle.crypto.digests.SHA256Digest;
@@ -120,7 +119,6 @@ public class Crypto {
      * @param signatureBase64 The Bitcoin-format message signature in base64
      * @throws java.security.SignatureException If the public key could not be recovered or if there was a signature format error.
      */
-    @Nullable
     public static ECPoint signedMessageToKey(String message, String signatureBase64) throws SignatureException {
         byte[] signatureEncoded;
         try {
@@ -201,7 +199,6 @@ public class Crypto {
      * @param compressed Whether or not the original pubkey was compressed.
      * @return An ECKey containing only the public part, or null if recovery wasn't possible.
      */
-    @Nullable
     public static ECPoint recoverFromSignature(int recId, ECDSASignature sig, byte[] messageHash, boolean compressed) {
         checkArgument(recId >= 0, "recId must be positive");
         checkArgument(sig.r.signum() >= 0, "r must be positive");
@@ -290,5 +287,12 @@ public class Crypto {
             result = 31 * result + s.hashCode();
             return result;
         }
+    }
+
+    public static List<ECPoint> decode(String... points) {
+        List<ECPoint> result = new LinkedList<>();
+        for (String point : points)
+            result.add(CURVE.getCurve().decodePoint(BaseEncoding.base16().decode(point)));
+        return result;
     }
 }

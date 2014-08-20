@@ -83,16 +83,17 @@ public class UFXPrepare {
         // Build an index.
         UFXProtocol.Updates.Builder updates = UFXProtocol.Updates.newBuilder();
         for (Path path : Utils.listDir(site)) {
-            if (!path.toString().endsWith(".bpatch")) continue;
+            if (!path.toString().endsWith(".jar.bpatch")) continue;
             UFXProtocol.Update.Builder update = UFXProtocol.Update.newBuilder();
             int num = Integer.parseInt(path.getFileName().toString().replaceAll("\\.jar\\.bpatch", ""));
             update.setVersion(num);
             byte[] bits = Files.readAllBytes(path);
             update.setPatchSize(bits.length);
             update.setHash(ByteString.copyFrom(Utils.sha256(bits)));
+            System.out.println(path.toString() + ": " + BaseEncoding.base16().encode(update.getHash().toByteArray()));
             for (String baseURL : url.values(options)) {
                 try {
-                    URI uri = new URI(baseURL + "/" + num + ".bpatch");
+                    URI uri = new URI((baseURL.endsWith("/") ? baseURL : baseURL.concat("/")) + num + ".jar.bpatch");
                     update.addUrls(uri.toString());
                 } catch (URISyntaxException e) {
                     System.err.println("Base URL is malformed: " + baseURL);

@@ -28,7 +28,6 @@ public class DeltaCalculator {
             Path cur = inDir.resolve(num + ".jar");
             Path prev = inDir.resolve((num - 1) + ".jar");
             if (!(isRegularFile(cur) && isRegularFile(prev))) {
-                println("No more files found.");
                 break;
             }
             println("Calculating delta between %s and %s", cur, prev);
