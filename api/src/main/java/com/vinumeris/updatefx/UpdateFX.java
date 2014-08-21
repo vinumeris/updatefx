@@ -28,6 +28,7 @@ public class UpdateFX {
             if (Files.isDirectory(codePath)) {
                 log.info("Code location is not a JAR: assuming developer mode and ignoring updates.");
                 runRealMain(appInstallDir, args, mainClass);
+                return;
             }
             Path bestJarSeen = findBestJar(codePath, updatesDirectory);
             invoke(appInstallDir, mainClass, args, bestJarSeen);
@@ -61,11 +62,11 @@ public class UpdateFX {
      * this process. We have to do it this way because JavaFX is designed to only be started once and there's no
      * easy way to hack around that: we need to tear down the entire process and start again.
      */
-    public static void restartApp(Path appInstallDir, String[] args) throws IOException {
+    public static void restartApp() throws IOException {
         Path path = findAppExecutable(appInstallDir);
         if (path == null) throw new UnsupportedOperationException();
-        String[] cmd = new String[args.length + 1];
-        System.arraycopy(args, 0, cmd, 1, args.length);
+        String[] cmd = new String[initArgs.length + 1];
+        System.arraycopy(initArgs, 0, cmd, 1, initArgs.length);
         cmd[0] = path.toAbsolutePath().toString();
         log.info("Restarting app with command line: {}", Arrays.toString(cmd));
         new ProcessBuilder(cmd).start();
@@ -103,7 +104,12 @@ public class UpdateFX {
         classLoader.close();
     }
 
+    public static Path appInstallDir;
+    public static String[] initArgs;
+
     private static void runRealMain(Path appInstallDir, String[] args, Class<?> newClass) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        UpdateFX.appInstallDir = appInstallDir;
+        UpdateFX.initArgs = args;
         // We can't cast to EntryPoint here because it's loaded in a parallel classloader heirarchy.
         Method main = newClass.getMethod("realMain", Path.class, String[].class);
         main.invoke(null, appInstallDir, args);

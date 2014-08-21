@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.FileHandler;
@@ -29,10 +28,8 @@ public class ExampleApp extends Application {
         UpdateFX.bootstrap(ExampleApp.class, AppDirectory.dir(), args);
     }
 
-    public static Path appInstallDir;
-    public static void realMain(Path appInstallDir, String[] args) {
-        ExampleApp.appInstallDir = appInstallDir;
-        launch(ExampleApp.class, args);
+    public static void realMain(String[] args) {
+        launch(args);
     }
 
     private static java.util.logging.Logger logger;
@@ -46,12 +43,13 @@ public class ExampleApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        // For some reason the JavaFX launch process results in us losing the thread context class loader: reset it.
+        Thread.currentThread().setContextClassLoader(ExampleApp.class.getClassLoader());
         // Must be done twice for the times when we come here via realMain.
         AppDirectory.initAppDir("UpdateFX Example App");
 
         // We can return from here to get restarted to a newer version, but normally we don't want that.
         log.info("Hello World! This is version " + VERSION);
-        log.info("app install dir is " + appInstallDir);
 
         ProgressIndicator indicator = showGiantProgressWheel(primaryStage);
 
@@ -75,7 +73,7 @@ public class ExampleApp extends Application {
                 UpdateSummary summary = updater.get();
                 if (summary.newVersion > VERSION) {
                     log.info("Restarting to get version " + summary.newVersion);
-                    UpdateFX.restartApp(appInstallDir, new String[]{});
+                    UpdateFX.restartApp();
                 }
             } catch (Throwable e) {
                 log.error("oops", e);

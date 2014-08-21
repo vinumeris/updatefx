@@ -103,7 +103,7 @@ public class Updater extends Task<UpdateSummary> {
         for (Path path : files) {
             UFXProtocol.Update update = updates.get(cursor);
             Path base = pathToOrigJar;
-            if (update.getVersion() > 2)
+            if (update.getVersion() > currentVersion + 1)
                 base = localUpdatesDir.resolve((update.getVersion() - 1) + ".jar");
             Path next = localUpdatesDir.resolve(update.getVersion() + ".jar");
             log.info("Applying patch {} to {}", path, base);

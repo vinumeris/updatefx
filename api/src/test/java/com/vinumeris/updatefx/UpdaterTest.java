@@ -2,7 +2,6 @@ package com.vinumeris.updatefx;
 
 import com.google.common.hash.Hashing;
 import com.google.protobuf.ByteString;
-import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import org.bouncycastle.math.ec.ECPoint;
 import org.junit.After;
@@ -17,7 +16,6 @@ import java.nio.file.Path;
 import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.util.*;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.nio.file.Files.*;
@@ -28,7 +26,6 @@ public class UpdaterTest {
     private static final int HTTP_LOCAL_TEST_PORT = 18475;
     public static final String SERVER_PATH = "/_updatefx/appname";
     private HttpServer localServer;
-    private LinkedBlockingQueue<HttpExchange> httpReqs;
     private Map<String, byte[]> paths;
     private Updater updater;
     private Path dir;
@@ -195,7 +192,6 @@ public class UpdaterTest {
         updater.call();
     }
 
-
     @Test
     public void updateRun() throws Exception {
         Path working = dir.resolve("working");
@@ -222,6 +218,36 @@ public class UpdaterTest {
         UpdateSummary summary = updater.call();
         assertEquals(1064, workDone);
         assertEquals(1064, workMax);
+        byte[] bits3 = Files.readAllBytes(dir.resolve("3.jar"));
+        assertArrayEquals(baseFile, bits3);
+        assertEquals(3, summary.newVersion);
+    }
+
+    @Test
+    public void updateRun2() throws Exception {
+        // Update from v2 to v3.
+        Path working = dir.resolve("working");
+        createDirectory(working);
+        byte[] baseFile = new byte[2048];
+        Arrays.fill(baseFile, (byte) 1);
+        write(working.resolve("1.jar"), baseFile, CREATE_NEW);
+        baseFile[0] = 2;
+        Path baseJar = working.resolve("2.jar");
+        write(baseJar, baseFile, CREATE_NEW);
+        baseFile[0] = 3;
+        write(working.resolve("3.jar"), baseFile, CREATE_NEW);
+        DeltaCalculator.main(new String[]{working.toAbsolutePath().toString()});
+        Path bpatch2 = working.resolve("2.jar.bpatch");
+        assertTrue(exists(bpatch2));
+        Path bpatch3 = working.resolve("3.jar.bpatch");
+        assertTrue(exists(bpatch3));
+        byte[] bpatch1bits = readAllBytes(bpatch2);
+        byte[] bpatch2bits = readAllBytes(bpatch3);
+        paths.put("/2.jar.bpatch", bpatch1bits);
+        paths.put("/3.jar.bpatch", bpatch2bits);
+        configureIndex(Utils.sha256(bpatch1bits), Utils.sha256(bpatch2bits));
+        updater = new TestUpdater(baseURL, "UnitTest", 2, dir, baseJar);
+        UpdateSummary summary = updater.call();
         byte[] bits3 = Files.readAllBytes(dir.resolve("3.jar"));
         assertArrayEquals(baseFile, bits3);
         assertEquals(3, summary.newVersion);
