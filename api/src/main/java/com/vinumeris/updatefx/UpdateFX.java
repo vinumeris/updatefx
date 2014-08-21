@@ -62,15 +62,19 @@ public class UpdateFX {
      * this process. We have to do it this way because JavaFX is designed to only be started once and there's no
      * easy way to hack around that: we need to tear down the entire process and start again.
      */
-    public static void restartApp() throws IOException {
-        Path path = findAppExecutable(appInstallDir);
-        if (path == null) throw new UnsupportedOperationException();
-        String[] cmd = new String[initArgs.length + 1];
-        System.arraycopy(initArgs, 0, cmd, 1, initArgs.length);
-        cmd[0] = path.toAbsolutePath().toString();
-        log.info("Restarting app with command line: {}", Arrays.toString(cmd));
-        new ProcessBuilder(cmd).start();
-        Runtime.getRuntime().exit(0);
+    public static void restartApp() {
+        try {
+            Path path = findAppExecutable(appInstallDir);
+            if (path == null) throw new UnsupportedOperationException();
+            String[] cmd = new String[initArgs.length + 1];
+            System.arraycopy(initArgs, 0, cmd, 1, initArgs.length);
+            cmd[0] = path.toAbsolutePath().toString();
+            log.info("Restarting app with command line: {}", Arrays.toString(cmd));
+            new ProcessBuilder(cmd).start();
+            Runtime.getRuntime().exit(0);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static Path findAppExecutable(Path appInstallDir) throws IOException {
@@ -107,12 +111,13 @@ public class UpdateFX {
     public static Path appInstallDir;
     public static String[] initArgs;
 
-    private static void runRealMain(Path appInstallDir, String[] args, Class<?> newClass) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        UpdateFX.appInstallDir = appInstallDir;
-        UpdateFX.initArgs = args;
+    private static void runRealMain(Path appInstallDir, String[] args, Class<?> newClass) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, ClassNotFoundException, NoSuchFieldException {
+        Class<?> thisStatic = Class.forName(UpdateFX.class.getCanonicalName(), true, Thread.currentThread().getContextClassLoader());
+        thisStatic.getField("appInstallDir").set(null, appInstallDir);
+        thisStatic.getField("initArgs").set(null, args);
         // We can't cast to EntryPoint here because it's loaded in a parallel classloader heirarchy.
-        Method main = newClass.getMethod("realMain", Path.class, String[].class);
-        main.invoke(null, appInstallDir, args);
+        Method main = newClass.getMethod("realMain", String[].class);
+        main.invoke(null, (Object) args);   // The apparently pointless cast is to disambiguate things for the compiler.
     }
 
     public static Path findCodePath(Class mainClass) {

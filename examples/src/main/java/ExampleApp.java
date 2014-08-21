@@ -80,6 +80,8 @@ public class ExampleApp extends Application {
             }
         });
 
+        indicator.setOnMouseClicked(ev -> UpdateFX.restartApp());
+
         new Thread(updater, "UpdateFX Thread").start();
 
         primaryStage.show();
