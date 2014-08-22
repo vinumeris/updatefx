@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -45,15 +46,13 @@ public class UpdateFX {
         // restarts.
         String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("win")) {
-            // TODO: Fill this out!
-            throw new UnsupportedOperationException();
+            return origJarPath.getParent() /* c:\Users\foo\AppData\Local\AppName\app */.getParent();
         } else if (os.contains("mac")) {
             // Returns path to the .app directory, which normally contains only a Contents directory.
             return origJarPath.getParent().resolve("../../").normalize().toAbsolutePath();
         } else {
             // Linux and other similar systems, we hope (not Android).
-            // TODO: Fill this out!
-            throw new UnsupportedOperationException();
+            return origJarPath.getParent() /* /opt/appname/app */ .getParent();
         }
     }
 
@@ -82,24 +81,31 @@ public class UpdateFX {
             throw new NullPointerException();
         // TODO: It'd be nice if there was a better way to find our native executable path.
         String os = System.getProperty("os.name").toLowerCase();
-        if (os.contains("win")) {
-            // TODO: Fill this out!
-            return null;
-        } else if (os.contains("mac")) {
+        if (os.contains("mac")) {
             // Returns path to the .app directory, which normally contains only a Contents directory.
             List<Path> exes = Utils.listDir(appInstallDir.resolve("Contents/MacOS"));
             if (exes.size() != 1)
                 throw new IllegalStateException("Found unknown number of app executables");
             return exes.get(0);
         } else {
-            // Linux and other similar systems, we hope (not Android).
-            // TODO: Fill this out!
-            throw new UnsupportedOperationException();
+            // Linux, Windows and other similar systems, we hope (not Android).
+            // Binary is in the top level of the app installd dir (/opt/appname/AppName) along with a few other files.
+            // So we locate the binary by finding the program that is marked executable.
+            List<Path> exes = Utils.listDir(appInstallDir);
+            List<Path> orig = new LinkedList<>(exes);
+            if (os.contains("win")) {
+                exes.removeIf(path -> !path.toString().toLowerCase().endsWith(".exe"));
+            } else {
+                exes.removeIf(path -> !Files.isExecutable(path));
+                exes.removeIf(path -> path.getFileName().toString().contains("."));
+            }
+            if (exes.size() != 1)
+                throw new IllegalStateException("App install dir didn't look like what we expected: " + orig);
+            return exes.get(0);
         }
     }
 
     private static void invoke(Path appInstallDir, Class mainClass, String[] args, Path bestJarSeen) throws Exception {
-        log.info("Loading {}", bestJarSeen);
         URL url = bestJarSeen.toUri().toURL();
         URLClassLoader classLoader = new URLClassLoader(new URL[] { url }, UpdateFX.class.getClassLoader().getParent());
         Class<?> newClass = Class.forName(mainClass.getCanonicalName(), true, classLoader);
