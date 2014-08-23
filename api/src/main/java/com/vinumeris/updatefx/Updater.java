@@ -41,6 +41,7 @@ public class Updater extends Task<UpdateSummary> {
 
     private long totalBytesDownloaded;
     private int newHighestVersion;
+    private boolean overrideURLs = false;
 
     public Updater(String updateBaseURL, String userAgent, int currentVersion, Path localUpdatesDir,
                    Path pathToOrigJar, List<ECPoint> pubkeys, int requiredSigningThreshold) {
@@ -53,6 +54,16 @@ public class Updater extends Task<UpdateSummary> {
         this.requiredSigningThreshold = requiredSigningThreshold;
 
         newHighestVersion = currentVersion;
+    }
+
+    /**
+     * If true, then any URLs found in the index file will be ignored, and their file name will be appended to the
+     * updateBaseURL instead. This is useful when you wish to test a new index locally before uploading it to your
+     * web server: by setting an updateBaseURL of localhost and setting this to true, updates will be downloaded
+     * from a local web server instead.
+     */
+    public void setOverrideURLs(boolean overrideURLs) {
+        this.overrideURLs = overrideURLs;
     }
 
     @Override
@@ -119,9 +130,10 @@ public class Updater extends Task<UpdateSummary> {
         for (UFXProtocol.Update update : updates) {
             if (update.getUrlsCount() == 0)
                 throw new IllegalStateException("Bad update definition: no URLs");
-            String url = update.getUrls((int) (update.getUrlsCount() * Math.random()));
+            URI url = new URI(update.getUrls((int) (update.getUrlsCount() * Math.random())));
+            url = maybeOverrideBaseURL(url);
             log.info("Downloading update from {}", url);
-            URLConnection connection = openURL(new URI(url));
+            URLConnection connection = openURL(url);
             long size = connection.getContentLengthLong();
             long initialBytesRead = totalBytesDownloaded;
             try (InputStream netStream = connection.getInputStream()) {
@@ -157,6 +169,13 @@ public class Updater extends Task<UpdateSummary> {
             }
         }
         return files;
+    }
+
+    private URI maybeOverrideBaseURL(URI url) throws URISyntaxException {
+        if (!overrideURLs) return url;
+
+        String[] split = url.getPath().split("/");
+        return new URI(updateBaseURL + "/" + split[split.length - 1]).normalize();
     }
 
     private HashingOutputStream hashingFileStream(Path outfile) throws IOException {

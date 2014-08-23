@@ -252,4 +252,19 @@ public class UpdaterTest {
         assertArrayEquals(baseFile, bits3);
         assertEquals(3, summary.newVersion);
     }
+
+    @Test
+    public void testBaseURLOverride() throws Exception {
+        baseURL = "https://www.example.com/updates";
+        // Check the 404 for the update file is obtained (i.e. we made contact with the local server).
+        configureIndex("ignored".getBytes());
+        try {
+            updater = new TestUpdater("http://localhost:18475/_updatefx/appname/", "UnitTest", 1, dir, null);
+            updater.setOverrideURLs(true);
+            updater.call();
+            fail();
+        } catch (FileNotFoundException e) {
+            assertEquals("http://localhost:18475/_updatefx/appname/2.jar.bpatch", e.getMessage());
+        }
+    }
 }
