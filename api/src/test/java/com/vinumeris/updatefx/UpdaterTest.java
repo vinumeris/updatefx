@@ -17,6 +17,7 @@ import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.util.*;
 
+import static com.vinumeris.updatefx.Utils.sha256;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.nio.file.Files.*;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
@@ -93,20 +94,25 @@ public class UpdaterTest {
         updater.call();
     }
 
-    private void configureIndex(byte[]... hash) {
-        UFXProtocol.SignedUpdates.Builder signedUpdates = buildIndex(hash);
+    private void configureIndex(byte[]... hashes) {
+        UFXProtocol.SignedUpdates.Builder signedUpdates = buildIndex(hashes);
         paths.put("/index", signedUpdates.build().toByteArray());
     }
 
     private UFXProtocol.SignedUpdates.Builder buildIndex(byte[]... hash) {
         UFXProtocol.SignedUpdates.Builder signedUpdates = UFXProtocol.SignedUpdates.newBuilder();
         UFXProtocol.Updates.Builder updates = UFXProtocol.Updates.newBuilder();
+        updates.setVersion(1);
+        int verCursor = 2;
         for (int i = 0; i < hash.length; i++) {
             UFXProtocol.Update.Builder update = UFXProtocol.Update.newBuilder();
-            update.setVersion(i + 2);
-            String serverPath = "/" + (i + 2) + ".jar.bpatch";
+            update.setVersion(verCursor);
+            String serverPath = "/" + verCursor + ".jar.bpatch";
+            verCursor++;
             update.addUrls(baseURL + serverPath);
-            update.setHash(ByteString.copyFrom(hash[i]));
+            update.setPreHash(ByteString.copyFrom(hash[i++]));
+            update.setPatchHash(ByteString.copyFrom(hash[i++]));
+            update.setPostHash(ByteString.copyFrom(hash[i]));
             if (paths.get(serverPath) != null)
                 update.setPatchSize(paths.get(serverPath).length);
             else
@@ -123,7 +129,8 @@ public class UpdaterTest {
 
     @Test
     public void test404ForUpdateFile() throws Exception {
-        configureIndex("ignored".getBytes());
+        byte[] b = "ignored".getBytes();
+        configureIndex(b, b, b);
         try {
             updater = new TestUpdater(baseURL, "UnitTest", 1, dir, null);
             updater.call();
@@ -138,7 +145,8 @@ public class UpdaterTest {
         byte[] fakePatch = new byte[1024];
         Arrays.fill(fakePatch, (byte) 0x42);
         paths.put("/2.jar.bpatch", fakePatch);
-        configureIndex("wrong".getBytes());
+        byte[] b = "wrong".getBytes();
+        configureIndex(b, b, b);
         updater = new TestUpdater(baseURL, "UnitTest", 1, dir, null);
         updater.call();
     }
@@ -148,11 +156,16 @@ public class UpdaterTest {
         byte[] fakePatch = new byte[1024];
         Arrays.fill(fakePatch, (byte) 0x42);
         paths.put("/2.jar.bpatch", fakePatch);
-        UFXProtocol.SignedUpdates.Builder builder = buildIndex("wrong".getBytes());
+        UFXProtocol.SignedUpdates.Builder builder = makeWrongIndex();
         builder.clearSignatures();
         paths.put("/index", builder.build().toByteArray());
         updater = new TestUpdater(baseURL, "UnitTest", 1, dir, null);
         updater.call();
+    }
+
+    private UFXProtocol.SignedUpdates.Builder makeWrongIndex() {
+        byte[] b = "wrong".getBytes();
+        return buildIndex(b, b, b);
     }
 
     @Test(expected = Updater.Ex.InsufficientSigners.class)
@@ -160,7 +173,7 @@ public class UpdaterTest {
         byte[] fakePatch = new byte[1024];
         Arrays.fill(fakePatch, (byte) 0x42);
         paths.put("/2.jar.bpatch", fakePatch);
-        UFXProtocol.SignedUpdates.Builder builder = buildIndex("wrong".getBytes());
+        UFXProtocol.SignedUpdates.Builder builder = makeWrongIndex();
         BigInteger evilKey = new BigInteger(256, new SecureRandom());
         builder.setSignatures(0, Crypto.signMessage("msg", evilKey));
         paths.put("/index", builder.build().toByteArray());
@@ -173,7 +186,7 @@ public class UpdaterTest {
         byte[] fakePatch = new byte[1024];
         Arrays.fill(fakePatch, (byte) 0x42);
         paths.put("/2.jar.bpatch", fakePatch);
-        UFXProtocol.SignedUpdates.Builder builder = buildIndex("wrong".getBytes());
+        UFXProtocol.SignedUpdates.Builder builder = makeWrongIndex();
         builder.setSignatures(0, Crypto.signMessage("hash from some other project", privKeys.get(0)));
         paths.put("/index", builder.build().toByteArray());
         updater = new TestUpdater(baseURL, "UnitTest", 1, dir, null);
@@ -185,7 +198,7 @@ public class UpdaterTest {
         byte[] fakePatch = new byte[1024];
         Arrays.fill(fakePatch, (byte) 0x42);
         paths.put("/2.jar.bpatch", fakePatch);
-        UFXProtocol.SignedUpdates.Builder builder = buildIndex("wrong".getBytes());
+        UFXProtocol.SignedUpdates.Builder builder = makeWrongIndex();
         builder.setSignatures(0, "bzzzz");
         paths.put("/index", builder.build().toByteArray());
         updater = new TestUpdater(baseURL, "UnitTest", 1, dir, null);
@@ -201,9 +214,11 @@ public class UpdaterTest {
         Path baseJar = working.resolve("1.jar");
         write(baseJar, baseFile, CREATE_NEW);
         baseFile[0] = 2;
-        write(working.resolve("2.jar"), baseFile, CREATE_NEW);
+        Path jar2 = working.resolve("2.jar");
+        write(jar2, baseFile, CREATE_NEW);
         baseFile[0] = 3;
-        write(working.resolve("3.jar"), baseFile, CREATE_NEW);
+        Path jar3 = working.resolve("3.jar");
+        write(jar3, baseFile, CREATE_NEW);
         DeltaCalculator.main(new String[]{working.toAbsolutePath().toString()});
         Path bpatch2 = working.resolve("2.jar.bpatch");
         assertTrue(exists(bpatch2));
@@ -213,7 +228,8 @@ public class UpdaterTest {
         byte[] bpatch2bits = readAllBytes(bpatch3);
         paths.put("/2.jar.bpatch", bpatch1bits);
         paths.put("/3.jar.bpatch", bpatch2bits);
-        configureIndex(Utils.sha256(bpatch1bits), Utils.sha256(bpatch2bits));
+        configureIndex(sha256(readAllBytes(baseJar)), sha256(bpatch1bits), sha256(readAllBytes(jar2)),
+                       sha256(readAllBytes(jar2)), sha256(bpatch2bits), sha256(readAllBytes(jar3)));
         updater = new TestUpdater(baseURL, "UnitTest", 1, dir, baseJar);
         UpdateSummary summary = updater.call();
         assertEquals(1064, workDone);
@@ -230,12 +246,14 @@ public class UpdaterTest {
         createDirectory(working);
         byte[] baseFile = new byte[2048];
         Arrays.fill(baseFile, (byte) 1);
-        write(working.resolve("1.jar"), baseFile, CREATE_NEW);
+        Path jar1 = working.resolve("1.jar");
+        write(jar1, baseFile, CREATE_NEW);
         baseFile[0] = 2;
         Path baseJar = working.resolve("2.jar");
         write(baseJar, baseFile, CREATE_NEW);
         baseFile[0] = 3;
-        write(working.resolve("3.jar"), baseFile, CREATE_NEW);
+        Path jar3 = working.resolve("3.jar");
+        write(jar3, baseFile, CREATE_NEW);
         DeltaCalculator.main(new String[]{working.toAbsolutePath().toString()});
         Path bpatch2 = working.resolve("2.jar.bpatch");
         assertTrue(exists(bpatch2));
@@ -245,7 +263,8 @@ public class UpdaterTest {
         byte[] bpatch2bits = readAllBytes(bpatch3);
         paths.put("/2.jar.bpatch", bpatch1bits);
         paths.put("/3.jar.bpatch", bpatch2bits);
-        configureIndex(Utils.sha256(bpatch1bits), Utils.sha256(bpatch2bits));
+        configureIndex(sha256(readAllBytes(jar1)), sha256(bpatch1bits), sha256(readAllBytes(baseJar)),
+                       sha256(readAllBytes(baseJar)), sha256(bpatch2bits), sha256(readAllBytes(jar3)));
         updater = new TestUpdater(baseURL, "UnitTest", 2, dir, baseJar);
         UpdateSummary summary = updater.call();
         byte[] bits3 = Files.readAllBytes(dir.resolve("3.jar"));
@@ -257,7 +276,8 @@ public class UpdaterTest {
     public void testBaseURLOverride() throws Exception {
         baseURL = "https://www.example.com/updates";
         // Check the 404 for the update file is obtained (i.e. we made contact with the local server).
-        configureIndex("ignored".getBytes());
+        byte[] b = "ignored".getBytes();
+        configureIndex(b, b, b);
         try {
             updater = new TestUpdater("http://localhost:18475/_updatefx/appname/", "UnitTest", 1, dir, null);
             updater.setOverrideURLs(true);

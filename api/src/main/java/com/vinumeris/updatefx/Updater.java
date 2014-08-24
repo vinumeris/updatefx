@@ -1,6 +1,5 @@
 package com.vinumeris.updatefx;
 
-import com.google.common.base.Preconditions;
 import com.google.common.hash.Hashing;
 import com.google.common.hash.HashingOutputStream;
 import com.google.common.io.BaseEncoding;
@@ -19,10 +18,13 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLConnection;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.SignatureException;
 import java.util.*;
+
+import static com.google.common.base.Preconditions.checkState;
+import static com.vinumeris.updatefx.Utils.sha256;
+import static java.nio.file.Files.*;
 
 /**
  * An updater does all the work of downloading, checking and applying updates on a background thread. It has
@@ -93,6 +95,8 @@ public class Updater extends Task<UpdateSummary> {
 
     private void processSignedIndex(UFXProtocol.SignedUpdates signedUpdates) throws IOException, URISyntaxException, Ex, SignatureException {
         UFXProtocol.Updates updates = validateSignatures(signedUpdates);
+        if (updates.getVersion() != 1)
+            throw new Ex.UnknownIndexVersion();
         LinkedList<UFXProtocol.Update> applicableUpdates = new LinkedList<>();
         long bytesToFetch = 0;
         for (UFXProtocol.Update update : updates.getUpdatesList()) {
@@ -101,27 +105,12 @@ public class Updater extends Task<UpdateSummary> {
                 bytesToFetch += update.getPatchSize();
             }
         }
-        log.info("Found {} applicable updates totalling {} bytes", applicableUpdates.size(), bytesToFetch);
-        List<Path> downloadedUpdates = downloadUpdates(applicableUpdates, bytesToFetch);
-        processDownloadedUpdates(applicableUpdates, downloadedUpdates);
-    }
-
-    private void processDownloadedUpdates(List<UFXProtocol.Update> updates, List<Path> files) throws IOException {
-        // Go through the list and apply each patch (it's an xdelta) to the previous version to create a new full
-        // blown JAR, which is then moved into the updates base dir. The first update is special and is applied
-        // to the base jar that came with the downloaded app.
-        int cursor = 0;
-        for (Path path : files) {
-            UFXProtocol.Update update = updates.get(cursor);
-            Path base = pathToOrigJar;
-            if (update.getVersion() > currentVersion + 1)
-                base = localUpdatesDir.resolve((update.getVersion() - 1) + ".jar");
-            Path next = localUpdatesDir.resolve(update.getVersion() + ".jar");
-            log.info("Applying patch {} to {}", path, base);
-            new GDiffPatcher().patch(base.toFile(), path.toFile(), next.toFile());
-            Preconditions.checkState(update.getVersion() > newHighestVersion);
-            newHighestVersion = update.getVersion();
-            cursor++;
+        if (applicableUpdates.isEmpty()) {
+            log.info("No updates found: we're fresh!");
+        } else {
+            log.info("Found {} applicable updates totalling {} bytes", applicableUpdates.size(), bytesToFetch);
+            List<Path> downloadedUpdates = downloadUpdates(applicableUpdates, bytesToFetch);
+            processDownloadedUpdates(applicableUpdates, downloadedUpdates);
         }
     }
 
@@ -133,6 +122,7 @@ public class Updater extends Task<UpdateSummary> {
             URI url = new URI(update.getUrls((int) (update.getUrlsCount() * Math.random())));
             url = maybeOverrideBaseURL(url);
             log.info("Downloading update from {}", url);
+            Updater.this.updateProgress(0, bytesToFetch);
             URLConnection connection = openURL(url);
             long size = connection.getContentLengthLong();
             long initialBytesRead = totalBytesDownloaded;
@@ -148,27 +138,53 @@ public class Updater extends Task<UpdateSummary> {
                     }
                 };
                 Path tmpDir = localUpdatesDir.resolve("tmp");
-                if (!Files.isDirectory(tmpDir))
-                    Files.createDirectory(tmpDir);
+                if (!isDirectory(tmpDir))
+                    createDirectory(tmpDir);
                 Path outfile = tmpDir.resolve(update.getVersion() + ".jar.bpatch");
-                Files.deleteIfExists(outfile);
+                deleteIfExists(outfile);
                 log.info(" ... saving to {}", outfile);
                 byte[] sha256;
                 try (HashingOutputStream savedFile = hashingFileStream(outfile)) {
                     ByteStreams.copy(stream, savedFile);
                     sha256 = savedFile.hash().asBytes();
                 }
-                if (Arrays.equals(update.getHash().toByteArray(), sha256)) {
+                if (Arrays.equals(update.getPatchHash().toByteArray(), sha256)) {
                     files.add(outfile);
                 } else {
                     log.error("Downloaded file did not match signed index hash: {} vs {}",
                             BaseEncoding.base16().lowerCase().encode(sha256),
-                            BaseEncoding.base16().lowerCase().encode(update.getHash().toByteArray()));
+                            BaseEncoding.base16().lowerCase().encode(update.getPatchHash().toByteArray()));
                     throw new Ex.BadUpdateHash();
                 }
             }
         }
         return files;
+    }
+
+    private void processDownloadedUpdates(List<UFXProtocol.Update> updates, List<Path> files) throws IOException, Ex.BadUpdateHash {
+        // Go through the list and apply each patch (it's an xdelta) to the previous version to create a new full
+        // blown JAR, which is then moved into the updates base dir. The first update is special and is applied
+        // to the base jar that came with the downloaded app.
+        int cursor = 0;
+        for (Path path : files) {
+            UFXProtocol.Update update = updates.get(cursor);
+            Path base = pathToOrigJar;
+            if (update.getVersion() > currentVersion + 1)
+                base = localUpdatesDir.resolve((update.getVersion() - 1) + ".jar");
+            Path next = localUpdatesDir.resolve(update.getVersion() + ".jar");
+            log.info("Applying patch {} to {}", path, base);
+            // By here the patch hash was verified, but not the pre/post hashes.
+            byte[] preHash = sha256(readAllBytes(base));
+            if (!Arrays.equals(preHash, update.getPreHash().toByteArray()))
+                throw new Ex.BadUpdateHash();
+            new GDiffPatcher().patch(base.toFile(), path.toFile(), next.toFile());
+            byte[] postHash = sha256(readAllBytes(next));
+            if (!Arrays.equals(postHash, update.getPostHash().toByteArray()))
+                throw new Ex.BadUpdateHash();
+            checkState(update.getVersion() > newHighestVersion);
+            newHighestVersion = update.getVersion();
+            cursor++;
+        }
     }
 
     private URI maybeOverrideBaseURL(URI url) throws URISyntaxException {
@@ -179,7 +195,7 @@ public class Updater extends Task<UpdateSummary> {
     }
 
     private HashingOutputStream hashingFileStream(Path outfile) throws IOException {
-        return new HashingOutputStream(Hashing.sha256(), new BufferedOutputStream(Files.newOutputStream(outfile)));
+        return new HashingOutputStream(Hashing.sha256(), new BufferedOutputStream(newOutputStream(outfile)));
     }
 
     private UFXProtocol.Updates validateSignatures(UFXProtocol.SignedUpdates updates) throws Ex, InvalidProtocolBufferException, SignatureException {
@@ -206,5 +222,6 @@ public class Updater extends Task<UpdateSummary> {
     public static class Ex extends Exception {
         public static class BadUpdateHash extends Ex {}
         public static class InsufficientSigners extends Ex {}
+        public static class UnknownIndexVersion extends Ex {}
     }
 }

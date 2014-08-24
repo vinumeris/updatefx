@@ -90,17 +90,16 @@ public class UpdateFX {
         } else {
             // Linux, Windows and other similar systems, we hope (not Android).
             // Binary is in the top level of the app installd dir (/opt/appname/AppName) along with a few other files.
-            // So we locate the binary by finding the program that is marked executable.
+            // So we locate the binary by finding the program that is marked executable and isn't a directory.
             List<Path> exes = Utils.listDir(appInstallDir);
             List<Path> orig = new LinkedList<>(exes);
             if (os.contains("win")) {
                 exes.removeIf(path -> !path.toString().toLowerCase().endsWith(".exe"));
             } else {
-                exes.removeIf(path -> !Files.isExecutable(path));
-                exes.removeIf(path -> path.getFileName().toString().contains("."));
+                exes.removeIf(path -> !Files.isExecutable(path) || path.getFileName().toString().contains(".") || Files.isDirectory(path));
             }
             if (exes.size() != 1)
-                throw new IllegalStateException("App install dir didn't look like what we expected: " + orig);
+                throw new IllegalStateException("App install dir didn't look like what we expected: " + orig + " vs " + exes);
             return exes.get(0);
         }
     }

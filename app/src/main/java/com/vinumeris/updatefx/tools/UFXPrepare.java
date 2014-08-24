@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
@@ -79,18 +80,18 @@ public class UFXPrepare {
             wallet.saveToFile(walletFile.toFile());
         }
         // Generate the patch files.
-        DeltaCalculator.main(new String[] { builds.toAbsolutePath().toString(), site.toAbsolutePath().toString() });
+        List<DeltaCalculator.Result> patches = DeltaCalculator.process(builds.toAbsolutePath(), site.toAbsolutePath());
         // Build an index.
         UFXProtocol.Updates.Builder updates = UFXProtocol.Updates.newBuilder();
-        for (Path path : Utils.listDir(site)) {
-            if (!path.toString().endsWith(".jar.bpatch")) continue;
+        for (DeltaCalculator.Result patch : patches) {
             UFXProtocol.Update.Builder update = UFXProtocol.Update.newBuilder();
-            int num = Integer.parseInt(path.getFileName().toString().replaceAll("\\.jar\\.bpatch", ""));
+            int num = Integer.parseInt(patch.path.getFileName().toString().replaceAll("\\.jar\\.bpatch", ""));
             update.setVersion(num);
-            byte[] bits = Files.readAllBytes(path);
-            update.setPatchSize(bits.length);
-            update.setHash(ByteString.copyFrom(Utils.sha256(bits)));
-            System.out.println(path.toString() + ": " + BaseEncoding.base16().encode(update.getHash().toByteArray()));
+            update.setPatchSize(Files.size(patch.path));
+            update.setPreHash(ByteString.copyFrom(patch.preHash));
+            update.setPatchHash(ByteString.copyFrom(patch.patchHash));
+            update.setPostHash(ByteString.copyFrom(patch.postHash));
+            System.out.println(patch.path.toString() + ": " + BaseEncoding.base16().encode(update.getPatchHash().toByteArray()));
             for (String baseURL : url.values(options)) {
                 try {
                     URI uri = new URI((baseURL.endsWith("/") ? baseURL : baseURL.concat("/")) + num + ".jar.bpatch");
@@ -103,6 +104,7 @@ public class UFXPrepare {
             updates.addUpdates(update);
         }
         // Sign it.
+        updates.setVersion(1);
         UFXProtocol.SignedUpdates.Builder signedUpdates = UFXProtocol.SignedUpdates.newBuilder();
         byte[] bits = updates.build().toByteArray();
         byte[] hash = Utils.sha256(bits);

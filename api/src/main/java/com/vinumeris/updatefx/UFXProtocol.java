@@ -47,27 +47,47 @@ public final class UFXProtocol {
     com.google.protobuf.ByteString
         getUrlsBytes(int index);
 
-    // required bytes hash = 2;
+    // required bytes patch_hash = 2;
     /**
-     * <code>required bytes hash = 2;</code>
+     * <code>required bytes patch_hash = 2;</code>
      *
      * <pre>
-     * SHA256
+     * Hashes of the patch, the file before patching, the file after patching. Just used to catch mistakes.
      * </pre>
      */
-    boolean hasHash();
+    boolean hasPatchHash();
     /**
-     * <code>required bytes hash = 2;</code>
+     * <code>required bytes patch_hash = 2;</code>
      *
      * <pre>
-     * SHA256
+     * Hashes of the patch, the file before patching, the file after patching. Just used to catch mistakes.
      * </pre>
      */
-    com.google.protobuf.ByteString getHash();
+    com.google.protobuf.ByteString getPatchHash();
 
-    // required uint32 version = 3;
+    // required bytes pre_hash = 3;
     /**
-     * <code>required uint32 version = 3;</code>
+     * <code>required bytes pre_hash = 3;</code>
+     */
+    boolean hasPreHash();
+    /**
+     * <code>required bytes pre_hash = 3;</code>
+     */
+    com.google.protobuf.ByteString getPreHash();
+
+    // required bytes post_hash = 4;
+    /**
+     * <code>required bytes post_hash = 4;</code>
+     */
+    boolean hasPostHash();
+    /**
+     * <code>required bytes post_hash = 4;</code>
+     */
+    com.google.protobuf.ByteString getPostHash();
+
+    // required uint32 version = 5;
+    /**
+     * <code>required uint32 version = 5;</code>
      *
      * <pre>
      * Monotonically increasing integer for which higher versions are newer.
@@ -75,7 +95,7 @@ public final class UFXProtocol {
      */
     boolean hasVersion();
     /**
-     * <code>required uint32 version = 3;</code>
+     * <code>required uint32 version = 5;</code>
      *
      * <pre>
      * Monotonically increasing integer for which higher versions are newer.
@@ -83,9 +103,9 @@ public final class UFXProtocol {
      */
     int getVersion();
 
-    // required uint32 patch_size = 4;
+    // required uint64 patch_size = 6;
     /**
-     * <code>required uint32 patch_size = 4;</code>
+     * <code>required uint64 patch_size = 6;</code>
      *
      * <pre>
      * Size in bytes of the file pointed to by URLs.
@@ -93,16 +113,16 @@ public final class UFXProtocol {
      */
     boolean hasPatchSize();
     /**
-     * <code>required uint32 patch_size = 4;</code>
+     * <code>required uint64 patch_size = 6;</code>
      *
      * <pre>
      * Size in bytes of the file pointed to by URLs.
      * </pre>
      */
-    int getPatchSize();
+    long getPatchSize();
   }
   /**
-   * Protobuf type {@code updatefx.Update}
+   * Protobuf type {@code com.vinumeris.updatefx.Update}
    */
   public static final class Update extends
       com.google.protobuf.GeneratedMessage
@@ -162,17 +182,27 @@ public final class UFXProtocol {
             }
             case 18: {
               bitField0_ |= 0x00000001;
-              hash_ = input.readBytes();
+              patchHash_ = input.readBytes();
               break;
             }
-            case 24: {
+            case 26: {
               bitField0_ |= 0x00000002;
+              preHash_ = input.readBytes();
+              break;
+            }
+            case 34: {
+              bitField0_ |= 0x00000004;
+              postHash_ = input.readBytes();
+              break;
+            }
+            case 40: {
+              bitField0_ |= 0x00000008;
               version_ = input.readUInt32();
               break;
             }
-            case 32: {
-              bitField0_ |= 0x00000004;
-              patchSize_ = input.readUInt32();
+            case 48: {
+              bitField0_ |= 0x00000010;
+              patchSize_ = input.readUInt64();
               break;
             }
           }
@@ -192,12 +222,12 @@ public final class UFXProtocol {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.vinumeris.updatefx.UFXProtocol.internal_static_updatefx_Update_descriptor;
+      return com.vinumeris.updatefx.UFXProtocol.internal_static_com_vinumeris_updatefx_Update_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.vinumeris.updatefx.UFXProtocol.internal_static_updatefx_Update_fieldAccessorTable
+      return com.vinumeris.updatefx.UFXProtocol.internal_static_com_vinumeris_updatefx_Update_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               com.vinumeris.updatefx.UFXProtocol.Update.class, com.vinumeris.updatefx.UFXProtocol.Update.Builder.class);
     }
@@ -264,45 +294,77 @@ public final class UFXProtocol {
       return urls_.getByteString(index);
     }
 
-    // required bytes hash = 2;
-    public static final int HASH_FIELD_NUMBER = 2;
-    private com.google.protobuf.ByteString hash_;
+    // required bytes patch_hash = 2;
+    public static final int PATCH_HASH_FIELD_NUMBER = 2;
+    private com.google.protobuf.ByteString patchHash_;
     /**
-     * <code>required bytes hash = 2;</code>
+     * <code>required bytes patch_hash = 2;</code>
      *
      * <pre>
-     * SHA256
+     * Hashes of the patch, the file before patching, the file after patching. Just used to catch mistakes.
      * </pre>
      */
-    public boolean hasHash() {
+    public boolean hasPatchHash() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required bytes hash = 2;</code>
+     * <code>required bytes patch_hash = 2;</code>
      *
      * <pre>
-     * SHA256
+     * Hashes of the patch, the file before patching, the file after patching. Just used to catch mistakes.
      * </pre>
      */
-    public com.google.protobuf.ByteString getHash() {
-      return hash_;
+    public com.google.protobuf.ByteString getPatchHash() {
+      return patchHash_;
     }
 
-    // required uint32 version = 3;
-    public static final int VERSION_FIELD_NUMBER = 3;
+    // required bytes pre_hash = 3;
+    public static final int PRE_HASH_FIELD_NUMBER = 3;
+    private com.google.protobuf.ByteString preHash_;
+    /**
+     * <code>required bytes pre_hash = 3;</code>
+     */
+    public boolean hasPreHash() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>required bytes pre_hash = 3;</code>
+     */
+    public com.google.protobuf.ByteString getPreHash() {
+      return preHash_;
+    }
+
+    // required bytes post_hash = 4;
+    public static final int POST_HASH_FIELD_NUMBER = 4;
+    private com.google.protobuf.ByteString postHash_;
+    /**
+     * <code>required bytes post_hash = 4;</code>
+     */
+    public boolean hasPostHash() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>required bytes post_hash = 4;</code>
+     */
+    public com.google.protobuf.ByteString getPostHash() {
+      return postHash_;
+    }
+
+    // required uint32 version = 5;
+    public static final int VERSION_FIELD_NUMBER = 5;
     private int version_;
     /**
-     * <code>required uint32 version = 3;</code>
+     * <code>required uint32 version = 5;</code>
      *
      * <pre>
      * Monotonically increasing integer for which higher versions are newer.
      * </pre>
      */
     public boolean hasVersion() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
-     * <code>required uint32 version = 3;</code>
+     * <code>required uint32 version = 5;</code>
      *
      * <pre>
      * Monotonically increasing integer for which higher versions are newer.
@@ -312,42 +374,52 @@ public final class UFXProtocol {
       return version_;
     }
 
-    // required uint32 patch_size = 4;
-    public static final int PATCH_SIZE_FIELD_NUMBER = 4;
-    private int patchSize_;
+    // required uint64 patch_size = 6;
+    public static final int PATCH_SIZE_FIELD_NUMBER = 6;
+    private long patchSize_;
     /**
-     * <code>required uint32 patch_size = 4;</code>
+     * <code>required uint64 patch_size = 6;</code>
      *
      * <pre>
      * Size in bytes of the file pointed to by URLs.
      * </pre>
      */
     public boolean hasPatchSize() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     /**
-     * <code>required uint32 patch_size = 4;</code>
+     * <code>required uint64 patch_size = 6;</code>
      *
      * <pre>
      * Size in bytes of the file pointed to by URLs.
      * </pre>
      */
-    public int getPatchSize() {
+    public long getPatchSize() {
       return patchSize_;
     }
 
     private void initFields() {
       urls_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      hash_ = com.google.protobuf.ByteString.EMPTY;
+      patchHash_ = com.google.protobuf.ByteString.EMPTY;
+      preHash_ = com.google.protobuf.ByteString.EMPTY;
+      postHash_ = com.google.protobuf.ByteString.EMPTY;
       version_ = 0;
-      patchSize_ = 0;
+      patchSize_ = 0L;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      if (!hasHash()) {
+      if (!hasPatchHash()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasPreHash()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasPostHash()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -370,13 +442,19 @@ public final class UFXProtocol {
         output.writeBytes(1, urls_.getByteString(i));
       }
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBytes(2, hash_);
+        output.writeBytes(2, patchHash_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeUInt32(3, version_);
+        output.writeBytes(3, preHash_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeUInt32(4, patchSize_);
+        output.writeBytes(4, postHash_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeUInt32(5, version_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeUInt64(6, patchSize_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -398,15 +476,23 @@ public final class UFXProtocol {
       }
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, hash_);
+          .computeBytesSize(2, patchHash_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(3, version_);
+          .computeBytesSize(3, preHash_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(4, patchSize_);
+          .computeBytesSize(4, postHash_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(5, version_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt64Size(6, patchSize_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -487,19 +573,19 @@ public final class UFXProtocol {
       return builder;
     }
     /**
-     * Protobuf type {@code updatefx.Update}
+     * Protobuf type {@code com.vinumeris.updatefx.Update}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements com.vinumeris.updatefx.UFXProtocol.UpdateOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.vinumeris.updatefx.UFXProtocol.internal_static_updatefx_Update_descriptor;
+        return com.vinumeris.updatefx.UFXProtocol.internal_static_com_vinumeris_updatefx_Update_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.vinumeris.updatefx.UFXProtocol.internal_static_updatefx_Update_fieldAccessorTable
+        return com.vinumeris.updatefx.UFXProtocol.internal_static_com_vinumeris_updatefx_Update_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 com.vinumeris.updatefx.UFXProtocol.Update.class, com.vinumeris.updatefx.UFXProtocol.Update.Builder.class);
       }
@@ -526,12 +612,16 @@ public final class UFXProtocol {
         super.clear();
         urls_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000001);
-        hash_ = com.google.protobuf.ByteString.EMPTY;
+        patchHash_ = com.google.protobuf.ByteString.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000002);
-        version_ = 0;
+        preHash_ = com.google.protobuf.ByteString.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000004);
-        patchSize_ = 0;
+        postHash_ = com.google.protobuf.ByteString.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000008);
+        version_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000010);
+        patchSize_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000020);
         return this;
       }
 
@@ -541,7 +631,7 @@ public final class UFXProtocol {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.vinumeris.updatefx.UFXProtocol.internal_static_updatefx_Update_descriptor;
+        return com.vinumeris.updatefx.UFXProtocol.internal_static_com_vinumeris_updatefx_Update_descriptor;
       }
 
       public com.vinumeris.updatefx.UFXProtocol.Update getDefaultInstanceForType() {
@@ -569,13 +659,21 @@ public final class UFXProtocol {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000001;
         }
-        result.hash_ = hash_;
+        result.patchHash_ = patchHash_;
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.version_ = version_;
+        result.preHash_ = preHash_;
         if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000004;
+        }
+        result.postHash_ = postHash_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.version_ = version_;
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+          to_bitField0_ |= 0x00000010;
         }
         result.patchSize_ = patchSize_;
         result.bitField0_ = to_bitField0_;
@@ -604,8 +702,14 @@ public final class UFXProtocol {
           }
           onChanged();
         }
-        if (other.hasHash()) {
-          setHash(other.getHash());
+        if (other.hasPatchHash()) {
+          setPatchHash(other.getPatchHash());
+        }
+        if (other.hasPreHash()) {
+          setPreHash(other.getPreHash());
+        }
+        if (other.hasPostHash()) {
+          setPostHash(other.getPostHash());
         }
         if (other.hasVersion()) {
           setVersion(other.getVersion());
@@ -618,7 +722,15 @@ public final class UFXProtocol {
       }
 
       public final boolean isInitialized() {
-        if (!hasHash()) {
+        if (!hasPatchHash()) {
+          
+          return false;
+        }
+        if (!hasPreHash()) {
+          
+          return false;
+        }
+        if (!hasPostHash()) {
           
           return false;
         }
@@ -781,72 +893,144 @@ public final class UFXProtocol {
         return this;
       }
 
-      // required bytes hash = 2;
-      private com.google.protobuf.ByteString hash_ = com.google.protobuf.ByteString.EMPTY;
+      // required bytes patch_hash = 2;
+      private com.google.protobuf.ByteString patchHash_ = com.google.protobuf.ByteString.EMPTY;
       /**
-       * <code>required bytes hash = 2;</code>
+       * <code>required bytes patch_hash = 2;</code>
        *
        * <pre>
-       * SHA256
+       * Hashes of the patch, the file before patching, the file after patching. Just used to catch mistakes.
        * </pre>
        */
-      public boolean hasHash() {
+      public boolean hasPatchHash() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required bytes hash = 2;</code>
+       * <code>required bytes patch_hash = 2;</code>
        *
        * <pre>
-       * SHA256
+       * Hashes of the patch, the file before patching, the file after patching. Just used to catch mistakes.
        * </pre>
        */
-      public com.google.protobuf.ByteString getHash() {
-        return hash_;
+      public com.google.protobuf.ByteString getPatchHash() {
+        return patchHash_;
       }
       /**
-       * <code>required bytes hash = 2;</code>
+       * <code>required bytes patch_hash = 2;</code>
        *
        * <pre>
-       * SHA256
+       * Hashes of the patch, the file before patching, the file after patching. Just used to catch mistakes.
        * </pre>
        */
-      public Builder setHash(com.google.protobuf.ByteString value) {
+      public Builder setPatchHash(com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000002;
-        hash_ = value;
+        patchHash_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required bytes hash = 2;</code>
+       * <code>required bytes patch_hash = 2;</code>
        *
        * <pre>
-       * SHA256
+       * Hashes of the patch, the file before patching, the file after patching. Just used to catch mistakes.
        * </pre>
        */
-      public Builder clearHash() {
+      public Builder clearPatchHash() {
         bitField0_ = (bitField0_ & ~0x00000002);
-        hash_ = getDefaultInstance().getHash();
+        patchHash_ = getDefaultInstance().getPatchHash();
         onChanged();
         return this;
       }
 
-      // required uint32 version = 3;
+      // required bytes pre_hash = 3;
+      private com.google.protobuf.ByteString preHash_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>required bytes pre_hash = 3;</code>
+       */
+      public boolean hasPreHash() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>required bytes pre_hash = 3;</code>
+       */
+      public com.google.protobuf.ByteString getPreHash() {
+        return preHash_;
+      }
+      /**
+       * <code>required bytes pre_hash = 3;</code>
+       */
+      public Builder setPreHash(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        preHash_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required bytes pre_hash = 3;</code>
+       */
+      public Builder clearPreHash() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        preHash_ = getDefaultInstance().getPreHash();
+        onChanged();
+        return this;
+      }
+
+      // required bytes post_hash = 4;
+      private com.google.protobuf.ByteString postHash_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>required bytes post_hash = 4;</code>
+       */
+      public boolean hasPostHash() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>required bytes post_hash = 4;</code>
+       */
+      public com.google.protobuf.ByteString getPostHash() {
+        return postHash_;
+      }
+      /**
+       * <code>required bytes post_hash = 4;</code>
+       */
+      public Builder setPostHash(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        postHash_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required bytes post_hash = 4;</code>
+       */
+      public Builder clearPostHash() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        postHash_ = getDefaultInstance().getPostHash();
+        onChanged();
+        return this;
+      }
+
+      // required uint32 version = 5;
       private int version_ ;
       /**
-       * <code>required uint32 version = 3;</code>
+       * <code>required uint32 version = 5;</code>
        *
        * <pre>
        * Monotonically increasing integer for which higher versions are newer.
        * </pre>
        */
       public boolean hasVersion() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
-       * <code>required uint32 version = 3;</code>
+       * <code>required uint32 version = 5;</code>
        *
        * <pre>
        * Monotonically increasing integer for which higher versions are newer.
@@ -856,82 +1040,82 @@ public final class UFXProtocol {
         return version_;
       }
       /**
-       * <code>required uint32 version = 3;</code>
+       * <code>required uint32 version = 5;</code>
        *
        * <pre>
        * Monotonically increasing integer for which higher versions are newer.
        * </pre>
        */
       public Builder setVersion(int value) {
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000010;
         version_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required uint32 version = 3;</code>
+       * <code>required uint32 version = 5;</code>
        *
        * <pre>
        * Monotonically increasing integer for which higher versions are newer.
        * </pre>
        */
       public Builder clearVersion() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000010);
         version_ = 0;
         onChanged();
         return this;
       }
 
-      // required uint32 patch_size = 4;
-      private int patchSize_ ;
+      // required uint64 patch_size = 6;
+      private long patchSize_ ;
       /**
-       * <code>required uint32 patch_size = 4;</code>
+       * <code>required uint64 patch_size = 6;</code>
        *
        * <pre>
        * Size in bytes of the file pointed to by URLs.
        * </pre>
        */
       public boolean hasPatchSize() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000020) == 0x00000020);
       }
       /**
-       * <code>required uint32 patch_size = 4;</code>
+       * <code>required uint64 patch_size = 6;</code>
        *
        * <pre>
        * Size in bytes of the file pointed to by URLs.
        * </pre>
        */
-      public int getPatchSize() {
+      public long getPatchSize() {
         return patchSize_;
       }
       /**
-       * <code>required uint32 patch_size = 4;</code>
+       * <code>required uint64 patch_size = 6;</code>
        *
        * <pre>
        * Size in bytes of the file pointed to by URLs.
        * </pre>
        */
-      public Builder setPatchSize(int value) {
-        bitField0_ |= 0x00000008;
+      public Builder setPatchSize(long value) {
+        bitField0_ |= 0x00000020;
         patchSize_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required uint32 patch_size = 4;</code>
+       * <code>required uint64 patch_size = 6;</code>
        *
        * <pre>
        * Size in bytes of the file pointed to by URLs.
        * </pre>
        */
       public Builder clearPatchSize() {
-        bitField0_ = (bitField0_ & ~0x00000008);
-        patchSize_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000020);
+        patchSize_ = 0L;
         onChanged();
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:updatefx.Update)
+      // @@protoc_insertion_point(builder_scope:com.vinumeris.updatefx.Update)
     }
 
     static {
@@ -939,39 +1123,61 @@ public final class UFXProtocol {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:updatefx.Update)
+    // @@protoc_insertion_point(class_scope:com.vinumeris.updatefx.Update)
   }
 
   public interface UpdatesOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // repeated .updatefx.Update updates = 1;
+    // required int32 version = 1;
     /**
-     * <code>repeated .updatefx.Update updates = 1;</code>
+     * <code>required int32 version = 1;</code>
+     *
+     * <pre>
+     * Should be 1. Any other value will cause the contents of updates to be ignored. Usually you should never expose
+     * old clients to a new version index: use different base URLs etc to avoid it. This field is just a safety
+     * mechanism.
+     * </pre>
+     */
+    boolean hasVersion();
+    /**
+     * <code>required int32 version = 1;</code>
+     *
+     * <pre>
+     * Should be 1. Any other value will cause the contents of updates to be ignored. Usually you should never expose
+     * old clients to a new version index: use different base URLs etc to avoid it. This field is just a safety
+     * mechanism.
+     * </pre>
+     */
+    int getVersion();
+
+    // repeated .com.vinumeris.updatefx.Update updates = 2;
+    /**
+     * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
      */
     java.util.List<com.vinumeris.updatefx.UFXProtocol.Update> 
         getUpdatesList();
     /**
-     * <code>repeated .updatefx.Update updates = 1;</code>
+     * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
      */
     com.vinumeris.updatefx.UFXProtocol.Update getUpdates(int index);
     /**
-     * <code>repeated .updatefx.Update updates = 1;</code>
+     * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
      */
     int getUpdatesCount();
     /**
-     * <code>repeated .updatefx.Update updates = 1;</code>
+     * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
      */
     java.util.List<? extends com.vinumeris.updatefx.UFXProtocol.UpdateOrBuilder> 
         getUpdatesOrBuilderList();
     /**
-     * <code>repeated .updatefx.Update updates = 1;</code>
+     * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
      */
     com.vinumeris.updatefx.UFXProtocol.UpdateOrBuilder getUpdatesOrBuilder(
         int index);
   }
   /**
-   * Protobuf type {@code updatefx.Updates}
+   * Protobuf type {@code com.vinumeris.updatefx.Updates}
    */
   public static final class Updates extends
       com.google.protobuf.GeneratedMessage
@@ -1021,10 +1227,15 @@ public final class UFXProtocol {
               }
               break;
             }
-            case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+            case 8: {
+              bitField0_ |= 0x00000001;
+              version_ = input.readInt32();
+              break;
+            }
+            case 18: {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
                 updates_ = new java.util.ArrayList<com.vinumeris.updatefx.UFXProtocol.Update>();
-                mutable_bitField0_ |= 0x00000001;
+                mutable_bitField0_ |= 0x00000002;
               }
               updates_.add(input.readMessage(com.vinumeris.updatefx.UFXProtocol.Update.PARSER, extensionRegistry));
               break;
@@ -1037,7 +1248,7 @@ public final class UFXProtocol {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
           updates_ = java.util.Collections.unmodifiableList(updates_);
         }
         this.unknownFields = unknownFields.build();
@@ -1046,12 +1257,12 @@ public final class UFXProtocol {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.vinumeris.updatefx.UFXProtocol.internal_static_updatefx_Updates_descriptor;
+      return com.vinumeris.updatefx.UFXProtocol.internal_static_com_vinumeris_updatefx_Updates_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.vinumeris.updatefx.UFXProtocol.internal_static_updatefx_Updates_fieldAccessorTable
+      return com.vinumeris.updatefx.UFXProtocol.internal_static_com_vinumeris_updatefx_Updates_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               com.vinumeris.updatefx.UFXProtocol.Updates.class, com.vinumeris.updatefx.UFXProtocol.Updates.Builder.class);
     }
@@ -1071,36 +1282,65 @@ public final class UFXProtocol {
       return PARSER;
     }
 
-    // repeated .updatefx.Update updates = 1;
-    public static final int UPDATES_FIELD_NUMBER = 1;
+    private int bitField0_;
+    // required int32 version = 1;
+    public static final int VERSION_FIELD_NUMBER = 1;
+    private int version_;
+    /**
+     * <code>required int32 version = 1;</code>
+     *
+     * <pre>
+     * Should be 1. Any other value will cause the contents of updates to be ignored. Usually you should never expose
+     * old clients to a new version index: use different base URLs etc to avoid it. This field is just a safety
+     * mechanism.
+     * </pre>
+     */
+    public boolean hasVersion() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required int32 version = 1;</code>
+     *
+     * <pre>
+     * Should be 1. Any other value will cause the contents of updates to be ignored. Usually you should never expose
+     * old clients to a new version index: use different base URLs etc to avoid it. This field is just a safety
+     * mechanism.
+     * </pre>
+     */
+    public int getVersion() {
+      return version_;
+    }
+
+    // repeated .com.vinumeris.updatefx.Update updates = 2;
+    public static final int UPDATES_FIELD_NUMBER = 2;
     private java.util.List<com.vinumeris.updatefx.UFXProtocol.Update> updates_;
     /**
-     * <code>repeated .updatefx.Update updates = 1;</code>
+     * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
      */
     public java.util.List<com.vinumeris.updatefx.UFXProtocol.Update> getUpdatesList() {
       return updates_;
     }
     /**
-     * <code>repeated .updatefx.Update updates = 1;</code>
+     * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
      */
     public java.util.List<? extends com.vinumeris.updatefx.UFXProtocol.UpdateOrBuilder> 
         getUpdatesOrBuilderList() {
       return updates_;
     }
     /**
-     * <code>repeated .updatefx.Update updates = 1;</code>
+     * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
      */
     public int getUpdatesCount() {
       return updates_.size();
     }
     /**
-     * <code>repeated .updatefx.Update updates = 1;</code>
+     * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
      */
     public com.vinumeris.updatefx.UFXProtocol.Update getUpdates(int index) {
       return updates_.get(index);
     }
     /**
-     * <code>repeated .updatefx.Update updates = 1;</code>
+     * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
      */
     public com.vinumeris.updatefx.UFXProtocol.UpdateOrBuilder getUpdatesOrBuilder(
         int index) {
@@ -1108,6 +1348,7 @@ public final class UFXProtocol {
     }
 
     private void initFields() {
+      version_ = 0;
       updates_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
@@ -1115,6 +1356,10 @@ public final class UFXProtocol {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
+      if (!hasVersion()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
       for (int i = 0; i < getUpdatesCount(); i++) {
         if (!getUpdates(i).isInitialized()) {
           memoizedIsInitialized = 0;
@@ -1128,8 +1373,11 @@ public final class UFXProtocol {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeInt32(1, version_);
+      }
       for (int i = 0; i < updates_.size(); i++) {
-        output.writeMessage(1, updates_.get(i));
+        output.writeMessage(2, updates_.get(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -1140,9 +1388,13 @@ public final class UFXProtocol {
       if (size != -1) return size;
 
       size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, version_);
+      }
       for (int i = 0; i < updates_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, updates_.get(i));
+          .computeMessageSize(2, updates_.get(i));
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1223,19 +1475,19 @@ public final class UFXProtocol {
       return builder;
     }
     /**
-     * Protobuf type {@code updatefx.Updates}
+     * Protobuf type {@code com.vinumeris.updatefx.Updates}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements com.vinumeris.updatefx.UFXProtocol.UpdatesOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.vinumeris.updatefx.UFXProtocol.internal_static_updatefx_Updates_descriptor;
+        return com.vinumeris.updatefx.UFXProtocol.internal_static_com_vinumeris_updatefx_Updates_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.vinumeris.updatefx.UFXProtocol.internal_static_updatefx_Updates_fieldAccessorTable
+        return com.vinumeris.updatefx.UFXProtocol.internal_static_com_vinumeris_updatefx_Updates_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 com.vinumeris.updatefx.UFXProtocol.Updates.class, com.vinumeris.updatefx.UFXProtocol.Updates.Builder.class);
       }
@@ -1261,9 +1513,11 @@ public final class UFXProtocol {
 
       public Builder clear() {
         super.clear();
+        version_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000001);
         if (updatesBuilder_ == null) {
           updates_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ = (bitField0_ & ~0x00000002);
         } else {
           updatesBuilder_.clear();
         }
@@ -1276,7 +1530,7 @@ public final class UFXProtocol {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.vinumeris.updatefx.UFXProtocol.internal_static_updatefx_Updates_descriptor;
+        return com.vinumeris.updatefx.UFXProtocol.internal_static_com_vinumeris_updatefx_Updates_descriptor;
       }
 
       public com.vinumeris.updatefx.UFXProtocol.Updates getDefaultInstanceForType() {
@@ -1294,15 +1548,21 @@ public final class UFXProtocol {
       public com.vinumeris.updatefx.UFXProtocol.Updates buildPartial() {
         com.vinumeris.updatefx.UFXProtocol.Updates result = new com.vinumeris.updatefx.UFXProtocol.Updates(this);
         int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.version_ = version_;
         if (updatesBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
             updates_ = java.util.Collections.unmodifiableList(updates_);
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000002);
           }
           result.updates_ = updates_;
         } else {
           result.updates_ = updatesBuilder_.build();
         }
+        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
@@ -1318,11 +1578,14 @@ public final class UFXProtocol {
 
       public Builder mergeFrom(com.vinumeris.updatefx.UFXProtocol.Updates other) {
         if (other == com.vinumeris.updatefx.UFXProtocol.Updates.getDefaultInstance()) return this;
+        if (other.hasVersion()) {
+          setVersion(other.getVersion());
+        }
         if (updatesBuilder_ == null) {
           if (!other.updates_.isEmpty()) {
             if (updates_.isEmpty()) {
               updates_ = other.updates_;
-              bitField0_ = (bitField0_ & ~0x00000001);
+              bitField0_ = (bitField0_ & ~0x00000002);
             } else {
               ensureUpdatesIsMutable();
               updates_.addAll(other.updates_);
@@ -1335,7 +1598,7 @@ public final class UFXProtocol {
               updatesBuilder_.dispose();
               updatesBuilder_ = null;
               updates_ = other.updates_;
-              bitField0_ = (bitField0_ & ~0x00000001);
+              bitField0_ = (bitField0_ & ~0x00000002);
               updatesBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getUpdatesFieldBuilder() : null;
@@ -1349,6 +1612,10 @@ public final class UFXProtocol {
       }
 
       public final boolean isInitialized() {
+        if (!hasVersion()) {
+          
+          return false;
+        }
         for (int i = 0; i < getUpdatesCount(); i++) {
           if (!getUpdates(i).isInitialized()) {
             
@@ -1377,13 +1644,70 @@ public final class UFXProtocol {
       }
       private int bitField0_;
 
-      // repeated .updatefx.Update updates = 1;
+      // required int32 version = 1;
+      private int version_ ;
+      /**
+       * <code>required int32 version = 1;</code>
+       *
+       * <pre>
+       * Should be 1. Any other value will cause the contents of updates to be ignored. Usually you should never expose
+       * old clients to a new version index: use different base URLs etc to avoid it. This field is just a safety
+       * mechanism.
+       * </pre>
+       */
+      public boolean hasVersion() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required int32 version = 1;</code>
+       *
+       * <pre>
+       * Should be 1. Any other value will cause the contents of updates to be ignored. Usually you should never expose
+       * old clients to a new version index: use different base URLs etc to avoid it. This field is just a safety
+       * mechanism.
+       * </pre>
+       */
+      public int getVersion() {
+        return version_;
+      }
+      /**
+       * <code>required int32 version = 1;</code>
+       *
+       * <pre>
+       * Should be 1. Any other value will cause the contents of updates to be ignored. Usually you should never expose
+       * old clients to a new version index: use different base URLs etc to avoid it. This field is just a safety
+       * mechanism.
+       * </pre>
+       */
+      public Builder setVersion(int value) {
+        bitField0_ |= 0x00000001;
+        version_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int32 version = 1;</code>
+       *
+       * <pre>
+       * Should be 1. Any other value will cause the contents of updates to be ignored. Usually you should never expose
+       * old clients to a new version index: use different base URLs etc to avoid it. This field is just a safety
+       * mechanism.
+       * </pre>
+       */
+      public Builder clearVersion() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        version_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // repeated .com.vinumeris.updatefx.Update updates = 2;
       private java.util.List<com.vinumeris.updatefx.UFXProtocol.Update> updates_ =
         java.util.Collections.emptyList();
       private void ensureUpdatesIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
           updates_ = new java.util.ArrayList<com.vinumeris.updatefx.UFXProtocol.Update>(updates_);
-          bitField0_ |= 0x00000001;
+          bitField0_ |= 0x00000002;
          }
       }
 
@@ -1391,7 +1715,7 @@ public final class UFXProtocol {
           com.vinumeris.updatefx.UFXProtocol.Update, com.vinumeris.updatefx.UFXProtocol.Update.Builder, com.vinumeris.updatefx.UFXProtocol.UpdateOrBuilder> updatesBuilder_;
 
       /**
-       * <code>repeated .updatefx.Update updates = 1;</code>
+       * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
        */
       public java.util.List<com.vinumeris.updatefx.UFXProtocol.Update> getUpdatesList() {
         if (updatesBuilder_ == null) {
@@ -1401,7 +1725,7 @@ public final class UFXProtocol {
         }
       }
       /**
-       * <code>repeated .updatefx.Update updates = 1;</code>
+       * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
        */
       public int getUpdatesCount() {
         if (updatesBuilder_ == null) {
@@ -1411,7 +1735,7 @@ public final class UFXProtocol {
         }
       }
       /**
-       * <code>repeated .updatefx.Update updates = 1;</code>
+       * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
        */
       public com.vinumeris.updatefx.UFXProtocol.Update getUpdates(int index) {
         if (updatesBuilder_ == null) {
@@ -1421,7 +1745,7 @@ public final class UFXProtocol {
         }
       }
       /**
-       * <code>repeated .updatefx.Update updates = 1;</code>
+       * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
        */
       public Builder setUpdates(
           int index, com.vinumeris.updatefx.UFXProtocol.Update value) {
@@ -1438,7 +1762,7 @@ public final class UFXProtocol {
         return this;
       }
       /**
-       * <code>repeated .updatefx.Update updates = 1;</code>
+       * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
        */
       public Builder setUpdates(
           int index, com.vinumeris.updatefx.UFXProtocol.Update.Builder builderForValue) {
@@ -1452,7 +1776,7 @@ public final class UFXProtocol {
         return this;
       }
       /**
-       * <code>repeated .updatefx.Update updates = 1;</code>
+       * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
        */
       public Builder addUpdates(com.vinumeris.updatefx.UFXProtocol.Update value) {
         if (updatesBuilder_ == null) {
@@ -1468,7 +1792,7 @@ public final class UFXProtocol {
         return this;
       }
       /**
-       * <code>repeated .updatefx.Update updates = 1;</code>
+       * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
        */
       public Builder addUpdates(
           int index, com.vinumeris.updatefx.UFXProtocol.Update value) {
@@ -1485,7 +1809,7 @@ public final class UFXProtocol {
         return this;
       }
       /**
-       * <code>repeated .updatefx.Update updates = 1;</code>
+       * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
        */
       public Builder addUpdates(
           com.vinumeris.updatefx.UFXProtocol.Update.Builder builderForValue) {
@@ -1499,7 +1823,7 @@ public final class UFXProtocol {
         return this;
       }
       /**
-       * <code>repeated .updatefx.Update updates = 1;</code>
+       * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
        */
       public Builder addUpdates(
           int index, com.vinumeris.updatefx.UFXProtocol.Update.Builder builderForValue) {
@@ -1513,7 +1837,7 @@ public final class UFXProtocol {
         return this;
       }
       /**
-       * <code>repeated .updatefx.Update updates = 1;</code>
+       * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
        */
       public Builder addAllUpdates(
           java.lang.Iterable<? extends com.vinumeris.updatefx.UFXProtocol.Update> values) {
@@ -1527,12 +1851,12 @@ public final class UFXProtocol {
         return this;
       }
       /**
-       * <code>repeated .updatefx.Update updates = 1;</code>
+       * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
        */
       public Builder clearUpdates() {
         if (updatesBuilder_ == null) {
           updates_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ = (bitField0_ & ~0x00000002);
           onChanged();
         } else {
           updatesBuilder_.clear();
@@ -1540,7 +1864,7 @@ public final class UFXProtocol {
         return this;
       }
       /**
-       * <code>repeated .updatefx.Update updates = 1;</code>
+       * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
        */
       public Builder removeUpdates(int index) {
         if (updatesBuilder_ == null) {
@@ -1553,14 +1877,14 @@ public final class UFXProtocol {
         return this;
       }
       /**
-       * <code>repeated .updatefx.Update updates = 1;</code>
+       * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
        */
       public com.vinumeris.updatefx.UFXProtocol.Update.Builder getUpdatesBuilder(
           int index) {
         return getUpdatesFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .updatefx.Update updates = 1;</code>
+       * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
        */
       public com.vinumeris.updatefx.UFXProtocol.UpdateOrBuilder getUpdatesOrBuilder(
           int index) {
@@ -1570,7 +1894,7 @@ public final class UFXProtocol {
         }
       }
       /**
-       * <code>repeated .updatefx.Update updates = 1;</code>
+       * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
        */
       public java.util.List<? extends com.vinumeris.updatefx.UFXProtocol.UpdateOrBuilder> 
            getUpdatesOrBuilderList() {
@@ -1581,14 +1905,14 @@ public final class UFXProtocol {
         }
       }
       /**
-       * <code>repeated .updatefx.Update updates = 1;</code>
+       * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
        */
       public com.vinumeris.updatefx.UFXProtocol.Update.Builder addUpdatesBuilder() {
         return getUpdatesFieldBuilder().addBuilder(
             com.vinumeris.updatefx.UFXProtocol.Update.getDefaultInstance());
       }
       /**
-       * <code>repeated .updatefx.Update updates = 1;</code>
+       * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
        */
       public com.vinumeris.updatefx.UFXProtocol.Update.Builder addUpdatesBuilder(
           int index) {
@@ -1596,7 +1920,7 @@ public final class UFXProtocol {
             index, com.vinumeris.updatefx.UFXProtocol.Update.getDefaultInstance());
       }
       /**
-       * <code>repeated .updatefx.Update updates = 1;</code>
+       * <code>repeated .com.vinumeris.updatefx.Update updates = 2;</code>
        */
       public java.util.List<com.vinumeris.updatefx.UFXProtocol.Update.Builder> 
            getUpdatesBuilderList() {
@@ -1609,7 +1933,7 @@ public final class UFXProtocol {
           updatesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               com.vinumeris.updatefx.UFXProtocol.Update, com.vinumeris.updatefx.UFXProtocol.Update.Builder, com.vinumeris.updatefx.UFXProtocol.UpdateOrBuilder>(
                   updates_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000002) == 0x00000002),
                   getParentForChildren(),
                   isClean());
           updates_ = null;
@@ -1617,7 +1941,7 @@ public final class UFXProtocol {
         return updatesBuilder_;
       }
 
-      // @@protoc_insertion_point(builder_scope:updatefx.Updates)
+      // @@protoc_insertion_point(builder_scope:com.vinumeris.updatefx.Updates)
     }
 
     static {
@@ -1625,15 +1949,15 @@ public final class UFXProtocol {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:updatefx.Updates)
+    // @@protoc_insertion_point(class_scope:com.vinumeris.updatefx.Updates)
   }
 
   public interface SignedUpdatesOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // required bytes updates = 1;
+    // required bytes updates = 2;
     /**
-     * <code>required bytes updates = 1;</code>
+     * <code>required bytes updates = 2;</code>
      *
      * <pre>
      * Serialized Updates message.
@@ -1641,7 +1965,7 @@ public final class UFXProtocol {
      */
     boolean hasUpdates();
     /**
-     * <code>required bytes updates = 1;</code>
+     * <code>required bytes updates = 2;</code>
      *
      * <pre>
      * Serialized Updates message.
@@ -1649,9 +1973,9 @@ public final class UFXProtocol {
      */
     com.google.protobuf.ByteString getUpdates();
 
-    // repeated string signatures = 2;
+    // repeated string signatures = 3;
     /**
-     * <code>repeated string signatures = 2;</code>
+     * <code>repeated string signatures = 3;</code>
      *
      * <pre>
      * Bitcoin-style message signatures where the message is SHA256(updates) in textual form. The recovered keys
@@ -1662,7 +1986,7 @@ public final class UFXProtocol {
     java.util.List<java.lang.String>
     getSignaturesList();
     /**
-     * <code>repeated string signatures = 2;</code>
+     * <code>repeated string signatures = 3;</code>
      *
      * <pre>
      * Bitcoin-style message signatures where the message is SHA256(updates) in textual form. The recovered keys
@@ -1672,7 +1996,7 @@ public final class UFXProtocol {
      */
     int getSignaturesCount();
     /**
-     * <code>repeated string signatures = 2;</code>
+     * <code>repeated string signatures = 3;</code>
      *
      * <pre>
      * Bitcoin-style message signatures where the message is SHA256(updates) in textual form. The recovered keys
@@ -1682,7 +2006,7 @@ public final class UFXProtocol {
      */
     java.lang.String getSignatures(int index);
     /**
-     * <code>repeated string signatures = 2;</code>
+     * <code>repeated string signatures = 3;</code>
      *
      * <pre>
      * Bitcoin-style message signatures where the message is SHA256(updates) in textual form. The recovered keys
@@ -1694,7 +2018,7 @@ public final class UFXProtocol {
         getSignaturesBytes(int index);
   }
   /**
-   * Protobuf type {@code updatefx.SignedUpdates}
+   * Protobuf type {@code com.vinumeris.updatefx.SignedUpdates}
    */
   public static final class SignedUpdates extends
       com.google.protobuf.GeneratedMessage
@@ -1744,12 +2068,12 @@ public final class UFXProtocol {
               }
               break;
             }
-            case 10: {
+            case 18: {
               bitField0_ |= 0x00000001;
               updates_ = input.readBytes();
               break;
             }
-            case 18: {
+            case 26: {
               if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
                 signatures_ = new com.google.protobuf.LazyStringArrayList();
                 mutable_bitField0_ |= 0x00000002;
@@ -1774,12 +2098,12 @@ public final class UFXProtocol {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.vinumeris.updatefx.UFXProtocol.internal_static_updatefx_SignedUpdates_descriptor;
+      return com.vinumeris.updatefx.UFXProtocol.internal_static_com_vinumeris_updatefx_SignedUpdates_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.vinumeris.updatefx.UFXProtocol.internal_static_updatefx_SignedUpdates_fieldAccessorTable
+      return com.vinumeris.updatefx.UFXProtocol.internal_static_com_vinumeris_updatefx_SignedUpdates_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               com.vinumeris.updatefx.UFXProtocol.SignedUpdates.class, com.vinumeris.updatefx.UFXProtocol.SignedUpdates.Builder.class);
     }
@@ -1800,11 +2124,11 @@ public final class UFXProtocol {
     }
 
     private int bitField0_;
-    // required bytes updates = 1;
-    public static final int UPDATES_FIELD_NUMBER = 1;
+    // required bytes updates = 2;
+    public static final int UPDATES_FIELD_NUMBER = 2;
     private com.google.protobuf.ByteString updates_;
     /**
-     * <code>required bytes updates = 1;</code>
+     * <code>required bytes updates = 2;</code>
      *
      * <pre>
      * Serialized Updates message.
@@ -1814,7 +2138,7 @@ public final class UFXProtocol {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required bytes updates = 1;</code>
+     * <code>required bytes updates = 2;</code>
      *
      * <pre>
      * Serialized Updates message.
@@ -1824,11 +2148,11 @@ public final class UFXProtocol {
       return updates_;
     }
 
-    // repeated string signatures = 2;
-    public static final int SIGNATURES_FIELD_NUMBER = 2;
+    // repeated string signatures = 3;
+    public static final int SIGNATURES_FIELD_NUMBER = 3;
     private com.google.protobuf.LazyStringList signatures_;
     /**
-     * <code>repeated string signatures = 2;</code>
+     * <code>repeated string signatures = 3;</code>
      *
      * <pre>
      * Bitcoin-style message signatures where the message is SHA256(updates) in textual form. The recovered keys
@@ -1841,7 +2165,7 @@ public final class UFXProtocol {
       return signatures_;
     }
     /**
-     * <code>repeated string signatures = 2;</code>
+     * <code>repeated string signatures = 3;</code>
      *
      * <pre>
      * Bitcoin-style message signatures where the message is SHA256(updates) in textual form. The recovered keys
@@ -1853,7 +2177,7 @@ public final class UFXProtocol {
       return signatures_.size();
     }
     /**
-     * <code>repeated string signatures = 2;</code>
+     * <code>repeated string signatures = 3;</code>
      *
      * <pre>
      * Bitcoin-style message signatures where the message is SHA256(updates) in textual form. The recovered keys
@@ -1865,7 +2189,7 @@ public final class UFXProtocol {
       return signatures_.get(index);
     }
     /**
-     * <code>repeated string signatures = 2;</code>
+     * <code>repeated string signatures = 3;</code>
      *
      * <pre>
      * Bitcoin-style message signatures where the message is SHA256(updates) in textual form. The recovered keys
@@ -1899,10 +2223,10 @@ public final class UFXProtocol {
                         throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBytes(1, updates_);
+        output.writeBytes(2, updates_);
       }
       for (int i = 0; i < signatures_.size(); i++) {
-        output.writeBytes(2, signatures_.getByteString(i));
+        output.writeBytes(3, signatures_.getByteString(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -1915,7 +2239,7 @@ public final class UFXProtocol {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(1, updates_);
+          .computeBytesSize(2, updates_);
       }
       {
         int dataSize = 0;
@@ -2005,19 +2329,19 @@ public final class UFXProtocol {
       return builder;
     }
     /**
-     * Protobuf type {@code updatefx.SignedUpdates}
+     * Protobuf type {@code com.vinumeris.updatefx.SignedUpdates}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements com.vinumeris.updatefx.UFXProtocol.SignedUpdatesOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.vinumeris.updatefx.UFXProtocol.internal_static_updatefx_SignedUpdates_descriptor;
+        return com.vinumeris.updatefx.UFXProtocol.internal_static_com_vinumeris_updatefx_SignedUpdates_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.vinumeris.updatefx.UFXProtocol.internal_static_updatefx_SignedUpdates_fieldAccessorTable
+        return com.vinumeris.updatefx.UFXProtocol.internal_static_com_vinumeris_updatefx_SignedUpdates_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 com.vinumeris.updatefx.UFXProtocol.SignedUpdates.class, com.vinumeris.updatefx.UFXProtocol.SignedUpdates.Builder.class);
       }
@@ -2055,7 +2379,7 @@ public final class UFXProtocol {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.vinumeris.updatefx.UFXProtocol.internal_static_updatefx_SignedUpdates_descriptor;
+        return com.vinumeris.updatefx.UFXProtocol.internal_static_com_vinumeris_updatefx_SignedUpdates_descriptor;
       }
 
       public com.vinumeris.updatefx.UFXProtocol.SignedUpdates getDefaultInstanceForType() {
@@ -2144,10 +2468,10 @@ public final class UFXProtocol {
       }
       private int bitField0_;
 
-      // required bytes updates = 1;
+      // required bytes updates = 2;
       private com.google.protobuf.ByteString updates_ = com.google.protobuf.ByteString.EMPTY;
       /**
-       * <code>required bytes updates = 1;</code>
+       * <code>required bytes updates = 2;</code>
        *
        * <pre>
        * Serialized Updates message.
@@ -2157,7 +2481,7 @@ public final class UFXProtocol {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required bytes updates = 1;</code>
+       * <code>required bytes updates = 2;</code>
        *
        * <pre>
        * Serialized Updates message.
@@ -2167,7 +2491,7 @@ public final class UFXProtocol {
         return updates_;
       }
       /**
-       * <code>required bytes updates = 1;</code>
+       * <code>required bytes updates = 2;</code>
        *
        * <pre>
        * Serialized Updates message.
@@ -2183,7 +2507,7 @@ public final class UFXProtocol {
         return this;
       }
       /**
-       * <code>required bytes updates = 1;</code>
+       * <code>required bytes updates = 2;</code>
        *
        * <pre>
        * Serialized Updates message.
@@ -2196,7 +2520,7 @@ public final class UFXProtocol {
         return this;
       }
 
-      // repeated string signatures = 2;
+      // repeated string signatures = 3;
       private com.google.protobuf.LazyStringList signatures_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       private void ensureSignaturesIsMutable() {
         if (!((bitField0_ & 0x00000002) == 0x00000002)) {
@@ -2205,7 +2529,7 @@ public final class UFXProtocol {
          }
       }
       /**
-       * <code>repeated string signatures = 2;</code>
+       * <code>repeated string signatures = 3;</code>
        *
        * <pre>
        * Bitcoin-style message signatures where the message is SHA256(updates) in textual form. The recovered keys
@@ -2218,7 +2542,7 @@ public final class UFXProtocol {
         return java.util.Collections.unmodifiableList(signatures_);
       }
       /**
-       * <code>repeated string signatures = 2;</code>
+       * <code>repeated string signatures = 3;</code>
        *
        * <pre>
        * Bitcoin-style message signatures where the message is SHA256(updates) in textual form. The recovered keys
@@ -2230,7 +2554,7 @@ public final class UFXProtocol {
         return signatures_.size();
       }
       /**
-       * <code>repeated string signatures = 2;</code>
+       * <code>repeated string signatures = 3;</code>
        *
        * <pre>
        * Bitcoin-style message signatures where the message is SHA256(updates) in textual form. The recovered keys
@@ -2242,7 +2566,7 @@ public final class UFXProtocol {
         return signatures_.get(index);
       }
       /**
-       * <code>repeated string signatures = 2;</code>
+       * <code>repeated string signatures = 3;</code>
        *
        * <pre>
        * Bitcoin-style message signatures where the message is SHA256(updates) in textual form. The recovered keys
@@ -2255,7 +2579,7 @@ public final class UFXProtocol {
         return signatures_.getByteString(index);
       }
       /**
-       * <code>repeated string signatures = 2;</code>
+       * <code>repeated string signatures = 3;</code>
        *
        * <pre>
        * Bitcoin-style message signatures where the message is SHA256(updates) in textual form. The recovered keys
@@ -2274,7 +2598,7 @@ public final class UFXProtocol {
         return this;
       }
       /**
-       * <code>repeated string signatures = 2;</code>
+       * <code>repeated string signatures = 3;</code>
        *
        * <pre>
        * Bitcoin-style message signatures where the message is SHA256(updates) in textual form. The recovered keys
@@ -2293,7 +2617,7 @@ public final class UFXProtocol {
         return this;
       }
       /**
-       * <code>repeated string signatures = 2;</code>
+       * <code>repeated string signatures = 3;</code>
        *
        * <pre>
        * Bitcoin-style message signatures where the message is SHA256(updates) in textual form. The recovered keys
@@ -2309,7 +2633,7 @@ public final class UFXProtocol {
         return this;
       }
       /**
-       * <code>repeated string signatures = 2;</code>
+       * <code>repeated string signatures = 3;</code>
        *
        * <pre>
        * Bitcoin-style message signatures where the message is SHA256(updates) in textual form. The recovered keys
@@ -2324,7 +2648,7 @@ public final class UFXProtocol {
         return this;
       }
       /**
-       * <code>repeated string signatures = 2;</code>
+       * <code>repeated string signatures = 3;</code>
        *
        * <pre>
        * Bitcoin-style message signatures where the message is SHA256(updates) in textual form. The recovered keys
@@ -2343,7 +2667,7 @@ public final class UFXProtocol {
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:updatefx.SignedUpdates)
+      // @@protoc_insertion_point(builder_scope:com.vinumeris.updatefx.SignedUpdates)
     }
 
     static {
@@ -2351,24 +2675,24 @@ public final class UFXProtocol {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:updatefx.SignedUpdates)
+    // @@protoc_insertion_point(class_scope:com.vinumeris.updatefx.SignedUpdates)
   }
 
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_updatefx_Update_descriptor;
+    internal_static_com_vinumeris_updatefx_Update_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_updatefx_Update_fieldAccessorTable;
+      internal_static_com_vinumeris_updatefx_Update_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_updatefx_Updates_descriptor;
+    internal_static_com_vinumeris_updatefx_Updates_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_updatefx_Updates_fieldAccessorTable;
+      internal_static_com_vinumeris_updatefx_Updates_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_updatefx_SignedUpdates_descriptor;
+    internal_static_com_vinumeris_updatefx_SignedUpdates_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_updatefx_SignedUpdates_fieldAccessorTable;
+      internal_static_com_vinumeris_updatefx_SignedUpdates_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -2378,35 +2702,38 @@ public final class UFXProtocol {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\016updatefx.proto\022\010updatefx\"I\n\006Update\022\014\n\004" +
-      "urls\030\001 \003(\t\022\014\n\004hash\030\002 \002(\014\022\017\n\007version\030\003 \002(" +
-      "\r\022\022\n\npatch_size\030\004 \002(\r\",\n\007Updates\022!\n\007upda" +
-      "tes\030\001 \003(\0132\020.updatefx.Update\"4\n\rSignedUpd" +
-      "ates\022\017\n\007updates\030\001 \002(\014\022\022\n\nsignatures\030\002 \003(" +
-      "\tB%\n\026com.vinumeris.updatefxB\013UFXProtocol"
+      "\n\016updatefx.proto\022\026com.vinumeris.updatefx" +
+      "\"t\n\006Update\022\014\n\004urls\030\001 \003(\t\022\022\n\npatch_hash\030\002" +
+      " \002(\014\022\020\n\010pre_hash\030\003 \002(\014\022\021\n\tpost_hash\030\004 \002(" +
+      "\014\022\017\n\007version\030\005 \002(\r\022\022\n\npatch_size\030\006 \002(\004\"K" +
+      "\n\007Updates\022\017\n\007version\030\001 \002(\005\022/\n\007updates\030\002 " +
+      "\003(\0132\036.com.vinumeris.updatefx.Update\"4\n\rS" +
+      "ignedUpdates\022\017\n\007updates\030\002 \002(\014\022\022\n\nsignatu" +
+      "res\030\003 \003(\tB%\n\026com.vinumeris.updatefxB\013UFX" +
+      "Protocol"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
         public com.google.protobuf.ExtensionRegistry assignDescriptors(
             com.google.protobuf.Descriptors.FileDescriptor root) {
           descriptor = root;
-          internal_static_updatefx_Update_descriptor =
+          internal_static_com_vinumeris_updatefx_Update_descriptor =
             getDescriptor().getMessageTypes().get(0);
-          internal_static_updatefx_Update_fieldAccessorTable = new
+          internal_static_com_vinumeris_updatefx_Update_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_updatefx_Update_descriptor,
-              new java.lang.String[] { "Urls", "Hash", "Version", "PatchSize", });
-          internal_static_updatefx_Updates_descriptor =
+              internal_static_com_vinumeris_updatefx_Update_descriptor,
+              new java.lang.String[] { "Urls", "PatchHash", "PreHash", "PostHash", "Version", "PatchSize", });
+          internal_static_com_vinumeris_updatefx_Updates_descriptor =
             getDescriptor().getMessageTypes().get(1);
-          internal_static_updatefx_Updates_fieldAccessorTable = new
+          internal_static_com_vinumeris_updatefx_Updates_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_updatefx_Updates_descriptor,
-              new java.lang.String[] { "Updates", });
-          internal_static_updatefx_SignedUpdates_descriptor =
+              internal_static_com_vinumeris_updatefx_Updates_descriptor,
+              new java.lang.String[] { "Version", "Updates", });
+          internal_static_com_vinumeris_updatefx_SignedUpdates_descriptor =
             getDescriptor().getMessageTypes().get(2);
-          internal_static_updatefx_SignedUpdates_fieldAccessorTable = new
+          internal_static_com_vinumeris_updatefx_SignedUpdates_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_updatefx_SignedUpdates_descriptor,
+              internal_static_com_vinumeris_updatefx_SignedUpdates_descriptor,
               new java.lang.String[] { "Updates", "Signatures", });
           return null;
         }

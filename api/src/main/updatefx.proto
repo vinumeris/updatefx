@@ -1,6 +1,6 @@
 // UpdateFX. Copyright 2014 Vinumeris GmbH
 
-package updatefx;
+package com.vinumeris.updatefx;
 
 option java_package = "com.vinumeris.updatefx";
 option java_outer_classname = "UFXProtocol";
@@ -8,25 +8,34 @@ option java_outer_classname = "UFXProtocol";
 message Update {
     // All URLs for this update are considered to be equivalent. One will be chosen at random.
     repeated string urls = 1;
-    required bytes hash = 2;   // SHA256
+
+    // Hashes of the patch, the file before patching, the file after patching. Just used to catch mistakes.
+    required bytes patch_hash = 2;   // SHA256
+    required bytes pre_hash = 3;
+    required bytes post_hash = 4;
 
     // Monotonically increasing integer for which higher versions are newer.
-    required uint32 version = 3;
+    required uint32 version = 5;
 
     // Size in bytes of the file pointed to by URLs.
-    required uint32 patch_size = 4;
+    required uint64 patch_size = 6;
 }
 
 message Updates {
-    repeated Update updates = 1;
+    // Should be 1. Any other value will cause the contents of updates to be ignored. Usually you should never expose
+    // old clients to a new version index: use different base URLs etc to avoid it. This field is just a safety
+    // mechanism.
+    required int32 version = 1;
+
+    repeated Update updates = 2;
 }
 
 message SignedUpdates {
     // Serialized Updates message.
-    required bytes updates = 1;
+    required bytes updates = 2;
 
     // Bitcoin-style message signatures where the message is SHA256(updates) in textual form. The recovered keys
     // are checked against the hard-coded list of allowed signers and there must be sufficient to reach the (hard
     // coded) threshold.
-    repeated string signatures = 2;
+    repeated string signatures = 3;
 }
