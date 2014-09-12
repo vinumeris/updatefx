@@ -116,13 +116,14 @@ public class Updater extends Task<UpdateSummary> {
 
     private List<Path> downloadUpdates(LinkedList<UFXProtocol.Update> updates, long bytesToFetch) throws URISyntaxException, IOException, Ex {
         LinkedList<Path> files = new LinkedList<>();
+        if (updates.isEmpty()) return files;
+        Updater.this.updateProgress(0, bytesToFetch);
         for (UFXProtocol.Update update : updates) {
             if (update.getUrlsCount() == 0)
                 throw new IllegalStateException("Bad update definition: no URLs");
             URI url = new URI(update.getUrls((int) (update.getUrlsCount() * Math.random())));
             url = maybeOverrideBaseURL(url);
             log.info("Downloading update from {}", url);
-            Updater.this.updateProgress(0, bytesToFetch);
             URLConnection connection = openURL(url);
             long size = connection.getContentLengthLong();
             long initialBytesRead = totalBytesDownloaded;
