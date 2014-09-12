@@ -95,6 +95,7 @@ public class UpdateFX {
             List<Path> orig = new LinkedList<>(exes);
             if (os.contains("win")) {
                 exes.removeIf(path -> !path.toString().toLowerCase().endsWith(".exe"));
+                exes.removeIf(path -> path.toString().toLowerCase().endsWith("unins000.exe"));
             } else {
                 exes.removeIf(path -> !Files.isExecutable(path) || path.getFileName().toString().contains(".") || Files.isDirectory(path));
             }
