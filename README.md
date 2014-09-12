@@ -30,6 +30,8 @@ Some features it might provide in future could be:
 * Experiments.
 * Ability to use a TREZOR to store the signing keys.
 
+UpdateFX is [Apache 2.0 licensed](http://www.apache.org/licenses/LICENSE-2.0.html) which essentially means you can use it in proprietary projects if you want.
+
 How to use: Step 1
 ------------------
 
