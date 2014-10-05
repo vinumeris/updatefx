@@ -120,6 +120,24 @@ public final class UFXProtocol {
      * </pre>
      */
     long getPatchSize();
+
+    // optional bool gzipped = 7;
+    /**
+     * <code>optional bool gzipped = 7;</code>
+     *
+     * <pre>
+     * Whether the patch file is gzip compressed.
+     * </pre>
+     */
+    boolean hasGzipped();
+    /**
+     * <code>optional bool gzipped = 7;</code>
+     *
+     * <pre>
+     * Whether the patch file is gzip compressed.
+     * </pre>
+     */
+    boolean getGzipped();
   }
   /**
    * Protobuf type {@code com.vinumeris.updatefx.Update}
@@ -203,6 +221,11 @@ public final class UFXProtocol {
             case 48: {
               bitField0_ |= 0x00000010;
               patchSize_ = input.readUInt64();
+              break;
+            }
+            case 56: {
+              bitField0_ |= 0x00000020;
+              gzipped_ = input.readBool();
               break;
             }
           }
@@ -398,6 +421,30 @@ public final class UFXProtocol {
       return patchSize_;
     }
 
+    // optional bool gzipped = 7;
+    public static final int GZIPPED_FIELD_NUMBER = 7;
+    private boolean gzipped_;
+    /**
+     * <code>optional bool gzipped = 7;</code>
+     *
+     * <pre>
+     * Whether the patch file is gzip compressed.
+     * </pre>
+     */
+    public boolean hasGzipped() {
+      return ((bitField0_ & 0x00000020) == 0x00000020);
+    }
+    /**
+     * <code>optional bool gzipped = 7;</code>
+     *
+     * <pre>
+     * Whether the patch file is gzip compressed.
+     * </pre>
+     */
+    public boolean getGzipped() {
+      return gzipped_;
+    }
+
     private void initFields() {
       urls_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       patchHash_ = com.google.protobuf.ByteString.EMPTY;
@@ -405,6 +452,7 @@ public final class UFXProtocol {
       postHash_ = com.google.protobuf.ByteString.EMPTY;
       version_ = 0;
       patchSize_ = 0L;
+      gzipped_ = false;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -456,6 +504,9 @@ public final class UFXProtocol {
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         output.writeUInt64(6, patchSize_);
       }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        output.writeBool(7, gzipped_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -493,6 +544,10 @@ public final class UFXProtocol {
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt64Size(6, patchSize_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(7, gzipped_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -622,6 +677,8 @@ public final class UFXProtocol {
         bitField0_ = (bitField0_ & ~0x00000010);
         patchSize_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000020);
+        gzipped_ = false;
+        bitField0_ = (bitField0_ & ~0x00000040);
         return this;
       }
 
@@ -676,6 +733,10 @@ public final class UFXProtocol {
           to_bitField0_ |= 0x00000010;
         }
         result.patchSize_ = patchSize_;
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_bitField0_ |= 0x00000020;
+        }
+        result.gzipped_ = gzipped_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -716,6 +777,9 @@ public final class UFXProtocol {
         }
         if (other.hasPatchSize()) {
           setPatchSize(other.getPatchSize());
+        }
+        if (other.hasGzipped()) {
+          setGzipped(other.getGzipped());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -1111,6 +1175,55 @@ public final class UFXProtocol {
       public Builder clearPatchSize() {
         bitField0_ = (bitField0_ & ~0x00000020);
         patchSize_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // optional bool gzipped = 7;
+      private boolean gzipped_ ;
+      /**
+       * <code>optional bool gzipped = 7;</code>
+       *
+       * <pre>
+       * Whether the patch file is gzip compressed.
+       * </pre>
+       */
+      public boolean hasGzipped() {
+        return ((bitField0_ & 0x00000040) == 0x00000040);
+      }
+      /**
+       * <code>optional bool gzipped = 7;</code>
+       *
+       * <pre>
+       * Whether the patch file is gzip compressed.
+       * </pre>
+       */
+      public boolean getGzipped() {
+        return gzipped_;
+      }
+      /**
+       * <code>optional bool gzipped = 7;</code>
+       *
+       * <pre>
+       * Whether the patch file is gzip compressed.
+       * </pre>
+       */
+      public Builder setGzipped(boolean value) {
+        bitField0_ |= 0x00000040;
+        gzipped_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool gzipped = 7;</code>
+       *
+       * <pre>
+       * Whether the patch file is gzip compressed.
+       * </pre>
+       */
+      public Builder clearGzipped() {
+        bitField0_ = (bitField0_ & ~0x00000040);
+        gzipped_ = false;
         onChanged();
         return this;
       }
@@ -2703,14 +2816,14 @@ public final class UFXProtocol {
   static {
     java.lang.String[] descriptorData = {
       "\n\016updatefx.proto\022\026com.vinumeris.updatefx" +
-      "\"t\n\006Update\022\014\n\004urls\030\001 \003(\t\022\022\n\npatch_hash\030\002" +
-      " \002(\014\022\020\n\010pre_hash\030\003 \002(\014\022\021\n\tpost_hash\030\004 \002(" +
-      "\014\022\017\n\007version\030\005 \002(\r\022\022\n\npatch_size\030\006 \002(\004\"K" +
-      "\n\007Updates\022\017\n\007version\030\001 \002(\005\022/\n\007updates\030\002 " +
-      "\003(\0132\036.com.vinumeris.updatefx.Update\"4\n\rS" +
-      "ignedUpdates\022\017\n\007updates\030\002 \002(\014\022\022\n\nsignatu" +
-      "res\030\003 \003(\tB%\n\026com.vinumeris.updatefxB\013UFX" +
-      "Protocol"
+      "\"\205\001\n\006Update\022\014\n\004urls\030\001 \003(\t\022\022\n\npatch_hash\030" +
+      "\002 \002(\014\022\020\n\010pre_hash\030\003 \002(\014\022\021\n\tpost_hash\030\004 \002" +
+      "(\014\022\017\n\007version\030\005 \002(\r\022\022\n\npatch_size\030\006 \002(\004\022" +
+      "\017\n\007gzipped\030\007 \001(\010\"K\n\007Updates\022\017\n\007version\030\001" +
+      " \002(\005\022/\n\007updates\030\002 \003(\0132\036.com.vinumeris.up" +
+      "datefx.Update\"4\n\rSignedUpdates\022\017\n\007update" +
+      "s\030\002 \002(\014\022\022\n\nsignatures\030\003 \003(\tB%\n\026com.vinum" +
+      "eris.updatefxB\013UFXProtocol"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -2722,7 +2835,7 @@ public final class UFXProtocol {
           internal_static_com_vinumeris_updatefx_Update_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_com_vinumeris_updatefx_Update_descriptor,
-              new java.lang.String[] { "Urls", "PatchHash", "PreHash", "PostHash", "Version", "PatchSize", });
+              new java.lang.String[] { "Urls", "PatchHash", "PreHash", "PostHash", "Version", "PatchSize", "Gzipped", });
           internal_static_com_vinumeris_updatefx_Updates_descriptor =
             getDescriptor().getMessageTypes().get(1);
           internal_static_com_vinumeris_updatefx_Updates_fieldAccessorTable = new

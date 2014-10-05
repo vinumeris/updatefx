@@ -19,6 +19,9 @@ message Update {
 
     // Size in bytes of the file pointed to by URLs.
     required uint64 patch_size = 6;
+
+    // Whether the patch file is gzip compressed.
+    optional bool gzipped = 7;
 }
 
 message Updates {

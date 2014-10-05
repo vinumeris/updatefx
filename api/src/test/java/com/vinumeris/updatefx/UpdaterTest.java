@@ -117,6 +117,7 @@ public class UpdaterTest {
                 update.setPatchSize(paths.get(serverPath).length);
             else
                 update.setPatchSize(0);
+            update.setGzipped(true);
             updates.addUpdates(update);
         }
         ByteString bytes = updates.build().toByteString();
@@ -219,7 +220,7 @@ public class UpdaterTest {
         baseFile[0] = 3;
         Path jar3 = working.resolve("3.jar");
         write(jar3, baseFile, CREATE_NEW);
-        DeltaCalculator.main(new String[]{working.toAbsolutePath().toString()});
+        DeltaCalculator.process(working.toAbsolutePath(), working.toAbsolutePath(), -1);
         Path bpatch2 = working.resolve("2.jar.bpatch");
         assertTrue(exists(bpatch2));
         Path bpatch3 = working.resolve("3.jar.bpatch");
@@ -232,8 +233,8 @@ public class UpdaterTest {
                        sha256(readAllBytes(jar2)), sha256(bpatch2bits), sha256(readAllBytes(jar3)));
         updater = new TestUpdater(baseURL, "UnitTest", 1, dir, baseJar);
         UpdateSummary summary = updater.call();
-        assertEquals(1064, workDone);
-        assertEquals(1064, workMax);
+        assertEquals(80, workDone);
+        assertEquals(80, workMax);
         byte[] bits3 = Files.readAllBytes(dir.resolve("3.jar"));
         assertArrayEquals(baseFile, bits3);
         assertEquals(3, summary.newVersion);
@@ -254,7 +255,7 @@ public class UpdaterTest {
         baseFile[0] = 3;
         Path jar3 = working.resolve("3.jar");
         write(jar3, baseFile, CREATE_NEW);
-        DeltaCalculator.main(new String[]{working.toAbsolutePath().toString()});
+        DeltaCalculator.process(working.toAbsolutePath(), working.toAbsolutePath(), -1);
         Path bpatch2 = working.resolve("2.jar.bpatch");
         assertTrue(exists(bpatch2));
         Path bpatch3 = working.resolve("3.jar.bpatch");

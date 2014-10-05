@@ -36,6 +36,8 @@ public class UFXPrepare {
         // Base URL where the patches will be served. Can be specified multiple times.
         OptionSpec<String> url = parser.accepts("url").withRequiredArg();
         parser.accepts("debuglog");
+        // If set, which version to start decompressing jars from and applying gzip to the resulting patch files.
+        OptionSpec<String> gzipFromStr = parser.accepts("gzip-from").withRequiredArg().defaultsTo("-1");
         OptionSet options = parser.parse(args);
 
         if (options.has("debuglog")) {
@@ -54,6 +56,9 @@ public class UFXPrepare {
             System.err.println("You must specify at least one --url");
             return;
         }
+
+        int gzipFrom = Integer.parseInt(gzipFromStr.value(options));
+
         Path working = Paths.get((String) options.nonOptionArguments().get(0));
         Path builds = working.resolve("builds");
         if (!Files.isDirectory(builds)) {
@@ -79,18 +84,29 @@ public class UFXPrepare {
             wallet = new Wallet(params);
             wallet.saveToFile(walletFile.toFile());
         }
+        // Process the jars to remove timestamps and decompress. This does nothing if the zip is already processed.
+        // Version ranges can be excluded for compatibility with old Lighthouse versions.
+        // TODO: Once all testers are upgraded, remove this.
+        for (Path path : Utils.listDir(builds)) {
+            if (Files.isRegularFile(path) && path.toString().endsWith(".jar")) {
+                int v = Integer.parseInt(path.getFileName().toString().replace(".jar", ""));
+                if (v >= gzipFrom)
+                    ProcessZIP.process(path);
+            }
+        }
         // Generate the patch files.
-        List<DeltaCalculator.Result> patches = DeltaCalculator.process(builds.toAbsolutePath(), site.toAbsolutePath());
+        List<DeltaCalculator.Result> patches = DeltaCalculator.process(builds.toAbsolutePath(), site.toAbsolutePath(), gzipFrom);
         // Build an index.
         UFXProtocol.Updates.Builder updates = UFXProtocol.Updates.newBuilder();
         for (DeltaCalculator.Result patch : patches) {
             UFXProtocol.Update.Builder update = UFXProtocol.Update.newBuilder();
             int num = Integer.parseInt(patch.path.getFileName().toString().replaceAll("\\.jar\\.bpatch", ""));
             update.setVersion(num);
-            update.setPatchSize(Files.size(patch.path));
+            update.setPatchSize(patch.patchSize);
             update.setPreHash(ByteString.copyFrom(patch.preHash));
             update.setPatchHash(ByteString.copyFrom(patch.patchHash));
             update.setPostHash(ByteString.copyFrom(patch.postHash));
+            update.setGzipped(num >= gzipFrom);
             System.out.println(patch.path.toString() + ": " + BaseEncoding.base16().encode(update.getPatchHash().toByteArray()));
             for (String baseURL : url.values(options)) {
                 try {

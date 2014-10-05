@@ -7,11 +7,13 @@ import com.nothome.delta.GDiffWriter;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.GZIPOutputStream;
 
 import static com.vinumeris.updatefx.Utils.println;
 import static com.vinumeris.updatefx.Utils.sha256;
@@ -27,16 +29,16 @@ public class DeltaCalculator {
     public static void main(String[] args) throws IOException {
         Path inDir = Paths.get(args[0]);
         Path outDir = args.length > 1 ? Paths.get(args[1]) : inDir;
-        process(inDir, outDir);
+        process(inDir, outDir, -1);
     }
 
     public static class Result {
         public byte[] preHash, patchHash, postHash;
         public Path path;
-        public int patchSize;
+        public long patchSize;
     }
 
-    public static List<Result> process(Path inDir, Path outDir) throws IOException {
+    public static List<Result> process(Path inDir, Path outDir, int gzipFrom) throws IOException {
         List<Result> result = new ArrayList<>();
         int num = 2;
         while (true) {
@@ -50,16 +52,28 @@ public class DeltaCalculator {
             Path deltaFile = outDir.resolve(cur.getFileName().toString() + ".bpatch");
             deleteIfExists(deltaFile);
             deltaHashes.path = deltaFile;
-            try (HashingOutputStream stream = new HashingOutputStream(Hashing.sha256(),
-                    new BufferedOutputStream(newOutputStream(deltaFile, StandardOpenOption.CREATE_NEW)))) {
-                GDiffWriter writer = new GDiffWriter(stream);
+
+            try (
+                HashingOutputStream hashingStream = new HashingOutputStream(Hashing.sha256(),
+                        new BufferedOutputStream(
+                                newOutputStream(deltaFile, StandardOpenOption.CREATE_NEW)
+                        )
+                )
+            ) {
+                GZIPOutputStream zipStream = new GZIPOutputStream(hashingStream);
+                boolean isGzipping = num >= gzipFrom;
+                GDiffWriter writer = new GDiffWriter(isGzipping ? zipStream : hashingStream);
                 Delta delta = new Delta();
                 deltaHashes.preHash = sha256(readAllBytes(prev));
                 delta.compute(prev.toFile(), cur.toFile(), writer);
-                deltaHashes.patchHash = stream.hash().asBytes();
+                if (isGzipping)
+                    zipStream.close();
+                deltaHashes.patchHash = hashingStream.hash().asBytes();
                 deltaHashes.postHash = sha256(readAllBytes(cur));
             }
-            println("... done: %s", deltaFile);
+            long size = Files.size(deltaFile);
+            deltaHashes.patchSize = size;
+            println("... done: %s   (%.2fkb)", deltaFile, size / 1024.0);
             result.add(deltaHashes);
             num++;
         }

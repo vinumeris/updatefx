@@ -6,21 +6,21 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.io.ByteStreams;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.nothome.delta.GDiffPatcher;
+import com.nothome.delta.RandomAccessFileSeekableSource;
 import javafx.concurrent.Task;
 import org.bouncycastle.math.ec.ECPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLConnection;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.SignatureException;
 import java.util.*;
+import java.util.zip.GZIPInputStream;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.vinumeris.updatefx.Utils.sha256;
@@ -178,7 +178,15 @@ public class Updater extends Task<UpdateSummary> {
             byte[] preHash = sha256(readAllBytes(base));
             if (!Arrays.equals(preHash, update.getPreHash().toByteArray()))
                 throw new Ex.BadUpdateHash();
-            new GDiffPatcher().patch(base.toFile(), path.toFile(), next.toFile());
+            if (update.getGzipped()) {
+                try (RandomAccessFileSeekableSource baseSource = new RandomAccessFileSeekableSource(new RandomAccessFile(base.toFile(), "r"));
+                     InputStream patchStream = new GZIPInputStream(new BufferedInputStream(Files.newInputStream(path)));
+                     OutputStream nextStream = new BufferedOutputStream(Files.newOutputStream(next))) {
+                    new GDiffPatcher().patch(baseSource, patchStream, nextStream);
+                }
+            } else {
+                new GDiffPatcher().patch(base.toFile(), path.toFile(), next.toFile());
+            }
             byte[] postHash = sha256(readAllBytes(next));
             if (!Arrays.equals(postHash, update.getPostHash().toByteArray()))
                 throw new Ex.BadUpdateHash();
