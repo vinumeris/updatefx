@@ -13,6 +13,7 @@ developed by the Bitcoin community and has the following features:
 * The update metadata file (index) is signed using Bitcoin compatible keys, thus the same infrastructure used to
   protect Bitcoin keys can be reused to protect app signing keys.
 * Threshold signing i.e. you can require at least 3 of 5 public keys to sign an update index for it to be accepted.
+* Ability for the user to pin themselves to a particular version, so they can downgrade or ignore further updates.
 * Designed for usage with the JavaPackager tool introduced in Java 8.
 
 Some things it does NOT provide include:
@@ -25,7 +26,6 @@ Some things it does NOT provide include:
 Some features it might provide in future could be:
 
 * Ability for the user to downgrade to previous versions if new versions turn out to be problematic.
-* Ability for the user to pin themselves to the current version.
 * Beta/alpha channels.
 * Experiments.
 * Ability to use a TREZOR to store the signing keys.
