@@ -1,10 +1,14 @@
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.vinumeris.updatefx.*;
 import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import org.bouncycastle.math.ec.ECPoint;
 import org.slf4j.Logger;
@@ -36,7 +40,7 @@ public class ExampleApp extends Application {
     private static void setupLogging() throws IOException {
         logger = java.util.logging.Logger.getLogger("");
         logger.getHandlers()[0].setFormatter(new BriefLogFormatter());
-        FileHandler handler = new FileHandler(AppDirectory.dir().resolve("log").toString(), true);
+        FileHandler handler = new FileHandler(AppDirectory.dir().resolve("log.txt").toString(), true);
         handler.setFormatter(new BriefLogFormatter());
         logger.addHandler(handler);
     }
@@ -48,7 +52,6 @@ public class ExampleApp extends Application {
         // Must be done twice for the times when we come here via realMain.
         AppDirectory.initAppDir("UpdateFX Example App");
 
-        // We can return from here to get restarted to a newer version, but normally we don't want that.
         log.info("Hello World! This is version " + VERSION);
 
         ProgressIndicator indicator = showGiantProgressWheel(primaryStage);
@@ -73,7 +76,8 @@ public class ExampleApp extends Application {
                 UpdateSummary summary = updater.get();
                 if (summary.newVersion > VERSION) {
                     log.info("Restarting to get version " + summary.newVersion);
-                    UpdateFX.restartApp();
+                    if (UpdateFX.getVersionPin(AppDirectory.dir()) == 0)
+                        UpdateFX.restartApp();
                 }
             } catch (Throwable e) {
                 log.error("oops", e);
@@ -92,8 +96,17 @@ public class ExampleApp extends Application {
         BorderPane borderPane = new BorderPane(indicator);
         borderPane.setMinWidth(640);
         borderPane.setMinHeight(480);
-        Label label = new Label("V" + VERSION);
-        borderPane.setTop(label);
+        Button pinButton = new Button();
+        pinButton.setText("Pin to version 1");
+        pinButton.setOnAction(event -> {
+            UpdateFX.pinToVersion(AppDirectory.dir(), 1);
+            UpdateFX.restartApp();
+        });
+        HBox box = new HBox(new Label("Version " + VERSION), pinButton);
+        box.setSpacing(10);
+        box.setAlignment(Pos.CENTER_LEFT);
+        box.setPadding(new Insets(10));
+        borderPane.setTop(box);
         Scene scene = new Scene(borderPane);
         stage.setScene(scene);
         return indicator;

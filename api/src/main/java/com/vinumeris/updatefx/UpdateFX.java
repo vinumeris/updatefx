@@ -9,30 +9,31 @@ import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+
+import static java.lang.String.format;
 
 /**
  * Given a directory, select the jar with the highest version number, load it and pass control to it.
  */
 public class UpdateFX {
+    public static final String VERSION_PIN_FILE_NAME = "version-pin.txt";
     private static Logger log = LoggerFactory.getLogger(UpdateFX.class);
 
     public static void bootstrap(Class mainClass, Path updatesDirectory, String[] args) {
         try {
             Path codePath = findCodePath(mainClass);
             Path appInstallDir = codePathToInstallDir(codePath);
-            if (Files.isDirectory(codePath)) {
+            if (Files.isDirectory(codePath) || "ignore".equals(System.getProperty("updatefx"))) {
                 log.info("Code location is not a JAR: assuming developer mode and ignoring updates.");
                 runRealMain(appInstallDir, args, mainClass);
                 return;
             }
-            Path bestJarSeen = findBestJar(codePath, updatesDirectory);
-            invoke(appInstallDir, mainClass, args, bestJarSeen);
+            Path jar = findRightJar(codePath, updatesDirectory);
+            invoke(appInstallDir, mainClass, args, jar);
         } catch (Exception e) {
             log.error("Bootstrap failed", e);
             throw new RuntimeException(e);
@@ -132,6 +133,55 @@ public class UpdateFX {
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);   // Should never happen.
         }
+    }
+
+    /**
+     * Writes a text file to the app install dir containing the given version number. It is read at startup and prevents
+     * the highest version from being used.
+     */
+    public static void pinToVersion(Path updatesDirectory, int version) {
+        try {
+            Path pinPath = updatesDirectory.resolve(VERSION_PIN_FILE_NAME);
+            Files.write(pinPath, String.valueOf(version).getBytes(), StandardOpenOption.CREATE_NEW);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /** Returns 0 if not pinned. */
+    public static int getVersionPin(Path updatesDirectory) {
+        try {
+            Path pinPath = updatesDirectory.resolve(VERSION_PIN_FILE_NAME);
+            if (Files.exists(pinPath))
+                return Integer.parseInt(Files.readAllLines(pinPath).get(0));
+            else
+                return 0;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static Path findRightJar(Path origJarPath, Path updatesDirectory) throws IOException {
+        Path pinPath = updatesDirectory.resolve(VERSION_PIN_FILE_NAME);
+        if (Files.exists(pinPath)) {
+            try {
+                String contents = Files.readAllLines(pinPath).get(0);
+                int version = Integer.parseInt(contents);
+                String origVersionFN = origJarPath.getFileName().toString();
+                int origVersion = Integer.parseInt(origVersionFN.substring(0, origVersionFN.length() - 4));
+                Path pinnedJar = updatesDirectory.resolve(format("%d.jar", version));
+                if (Files.exists(pinnedJar)) {
+                    return pinnedJar;
+                } else if (version == origVersion) {
+                    return origJarPath;
+                } else if (version < origVersion) {
+                    throw new IllegalStateException();
+                }
+            } catch (Exception e) {
+                log.error("Could not parse/read " + pinPath + ", ignoring", e);
+            }
+        }
+        return findBestJar(origJarPath, updatesDirectory);
     }
 
     private static Path findBestJar(Path origJarPath, Path updatesDirectory) throws IOException {

@@ -1,11 +1,11 @@
 package com.vinumeris.updatefx.tools;
 
-import com.google.bitcoin.core.ECKey;
-import com.google.bitcoin.core.NetworkParameters;
-import com.google.bitcoin.core.Wallet;
-import com.google.bitcoin.params.MainNetParams;
-import com.google.bitcoin.store.UnreadableWalletException;
-import com.google.bitcoin.utils.BriefLogFormatter;
+import org.bitcoinj.core.ECKey;
+import org.bitcoinj.core.NetworkParameters;
+import org.bitcoinj.core.Wallet;
+import org.bitcoinj.params.MainNetParams;
+import org.bitcoinj.store.UnreadableWalletException;
+import org.bitcoinj.utils.BriefLogFormatter;
 import com.google.common.io.BaseEncoding;
 import com.google.protobuf.ByteString;
 import com.vinumeris.updatefx.DeltaCalculator;
