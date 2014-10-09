@@ -161,6 +161,15 @@ public class UpdateFX {
         }
     }
 
+    public static void unpin(Path updatesDirectory) {
+        try {
+            Path pinPath = updatesDirectory.resolve(VERSION_PIN_FILE_NAME);
+            Files.deleteIfExists(pinPath);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private static Path findRightJar(Path origJarPath, Path updatesDirectory) throws IOException {
         Path pinPath = updatesDirectory.resolve(VERSION_PIN_FILE_NAME);
         if (Files.exists(pinPath)) {

@@ -25,7 +25,6 @@ Some things it does NOT provide include:
 
 Some features it might provide in future could be:
 
-* Ability for the user to downgrade to previous versions if new versions turn out to be problematic.
 * Beta/alpha channels.
 * Experiments.
 * Ability to use a TREZOR to store the signing keys.

@@ -74,6 +74,10 @@ public class ExampleApp extends Application {
         updater.setOnSucceeded(event -> {
             try {
                 UpdateSummary summary = updater.get();
+                if (summary.descriptions.size() > 0) {
+                    log.info("One liner: {}", summary.descriptions.get(0).getOneLiner());
+                    log.info("{}", summary.descriptions.get(0).getDescription());
+                }
                 if (summary.newVersion > VERSION) {
                     log.info("Restarting to get version " + summary.newVersion);
                     if (UpdateFX.getVersionPin(AppDirectory.dir()) == 0)

@@ -8,6 +8,845 @@ public final class UFXProtocol {
   public static void registerAllExtensions(
       com.google.protobuf.ExtensionRegistry registry) {
   }
+  public interface UpdateDescriptionOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // required string one_liner = 1;
+    /**
+     * <code>required string one_liner = 1;</code>
+     *
+     * <pre>
+     * Textual description of each update that can be shown to the user.
+     * </pre>
+     */
+    boolean hasOneLiner();
+    /**
+     * <code>required string one_liner = 1;</code>
+     *
+     * <pre>
+     * Textual description of each update that can be shown to the user.
+     * </pre>
+     */
+    java.lang.String getOneLiner();
+    /**
+     * <code>required string one_liner = 1;</code>
+     *
+     * <pre>
+     * Textual description of each update that can be shown to the user.
+     * </pre>
+     */
+    com.google.protobuf.ByteString
+        getOneLinerBytes();
+
+    // optional string description = 2;
+    /**
+     * <code>optional string description = 2;</code>
+     */
+    boolean hasDescription();
+    /**
+     * <code>optional string description = 2;</code>
+     */
+    java.lang.String getDescription();
+    /**
+     * <code>optional string description = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getDescriptionBytes();
+
+    // optional string lang_code = 3 [default = "en_US"];
+    /**
+     * <code>optional string lang_code = 3 [default = "en_US"];</code>
+     */
+    boolean hasLangCode();
+    /**
+     * <code>optional string lang_code = 3 [default = "en_US"];</code>
+     */
+    java.lang.String getLangCode();
+    /**
+     * <code>optional string lang_code = 3 [default = "en_US"];</code>
+     */
+    com.google.protobuf.ByteString
+        getLangCodeBytes();
+  }
+  /**
+   * Protobuf type {@code com.vinumeris.updatefx.UpdateDescription}
+   */
+  public static final class UpdateDescription extends
+      com.google.protobuf.GeneratedMessage
+      implements UpdateDescriptionOrBuilder {
+    // Use UpdateDescription.newBuilder() to construct.
+    private UpdateDescription(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private UpdateDescription(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final UpdateDescription defaultInstance;
+    public static UpdateDescription getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public UpdateDescription getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private UpdateDescription(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              oneLiner_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              bitField0_ |= 0x00000002;
+              description_ = input.readBytes();
+              break;
+            }
+            case 26: {
+              bitField0_ |= 0x00000004;
+              langCode_ = input.readBytes();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.vinumeris.updatefx.UFXProtocol.internal_static_com_vinumeris_updatefx_UpdateDescription_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.vinumeris.updatefx.UFXProtocol.internal_static_com_vinumeris_updatefx_UpdateDescription_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.vinumeris.updatefx.UFXProtocol.UpdateDescription.class, com.vinumeris.updatefx.UFXProtocol.UpdateDescription.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<UpdateDescription> PARSER =
+        new com.google.protobuf.AbstractParser<UpdateDescription>() {
+      public UpdateDescription parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new UpdateDescription(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<UpdateDescription> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // required string one_liner = 1;
+    public static final int ONE_LINER_FIELD_NUMBER = 1;
+    private java.lang.Object oneLiner_;
+    /**
+     * <code>required string one_liner = 1;</code>
+     *
+     * <pre>
+     * Textual description of each update that can be shown to the user.
+     * </pre>
+     */
+    public boolean hasOneLiner() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required string one_liner = 1;</code>
+     *
+     * <pre>
+     * Textual description of each update that can be shown to the user.
+     * </pre>
+     */
+    public java.lang.String getOneLiner() {
+      java.lang.Object ref = oneLiner_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          oneLiner_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>required string one_liner = 1;</code>
+     *
+     * <pre>
+     * Textual description of each update that can be shown to the user.
+     * </pre>
+     */
+    public com.google.protobuf.ByteString
+        getOneLinerBytes() {
+      java.lang.Object ref = oneLiner_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        oneLiner_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string description = 2;
+    public static final int DESCRIPTION_FIELD_NUMBER = 2;
+    private java.lang.Object description_;
+    /**
+     * <code>optional string description = 2;</code>
+     */
+    public boolean hasDescription() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string description = 2;</code>
+     */
+    public java.lang.String getDescription() {
+      java.lang.Object ref = description_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          description_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string description = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getDescriptionBytes() {
+      java.lang.Object ref = description_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        description_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string lang_code = 3 [default = "en_US"];
+    public static final int LANG_CODE_FIELD_NUMBER = 3;
+    private java.lang.Object langCode_;
+    /**
+     * <code>optional string lang_code = 3 [default = "en_US"];</code>
+     */
+    public boolean hasLangCode() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional string lang_code = 3 [default = "en_US"];</code>
+     */
+    public java.lang.String getLangCode() {
+      java.lang.Object ref = langCode_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          langCode_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string lang_code = 3 [default = "en_US"];</code>
+     */
+    public com.google.protobuf.ByteString
+        getLangCodeBytes() {
+      java.lang.Object ref = langCode_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        langCode_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private void initFields() {
+      oneLiner_ = "";
+      description_ = "";
+      langCode_ = "en_US";
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (!hasOneLiner()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getOneLinerBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getDescriptionBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBytes(3, getLangCodeBytes());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getOneLinerBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getDescriptionBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, getLangCodeBytes());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static com.vinumeris.updatefx.UFXProtocol.UpdateDescription parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.vinumeris.updatefx.UFXProtocol.UpdateDescription parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.vinumeris.updatefx.UFXProtocol.UpdateDescription parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.vinumeris.updatefx.UFXProtocol.UpdateDescription parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.vinumeris.updatefx.UFXProtocol.UpdateDescription parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static com.vinumeris.updatefx.UFXProtocol.UpdateDescription parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static com.vinumeris.updatefx.UFXProtocol.UpdateDescription parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static com.vinumeris.updatefx.UFXProtocol.UpdateDescription parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static com.vinumeris.updatefx.UFXProtocol.UpdateDescription parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static com.vinumeris.updatefx.UFXProtocol.UpdateDescription parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(com.vinumeris.updatefx.UFXProtocol.UpdateDescription prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code com.vinumeris.updatefx.UpdateDescription}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements com.vinumeris.updatefx.UFXProtocol.UpdateDescriptionOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.vinumeris.updatefx.UFXProtocol.internal_static_com_vinumeris_updatefx_UpdateDescription_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.vinumeris.updatefx.UFXProtocol.internal_static_com_vinumeris_updatefx_UpdateDescription_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.vinumeris.updatefx.UFXProtocol.UpdateDescription.class, com.vinumeris.updatefx.UFXProtocol.UpdateDescription.Builder.class);
+      }
+
+      // Construct using com.vinumeris.updatefx.UFXProtocol.UpdateDescription.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        oneLiner_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        description_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        langCode_ = "en_US";
+        bitField0_ = (bitField0_ & ~0x00000004);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.vinumeris.updatefx.UFXProtocol.internal_static_com_vinumeris_updatefx_UpdateDescription_descriptor;
+      }
+
+      public com.vinumeris.updatefx.UFXProtocol.UpdateDescription getDefaultInstanceForType() {
+        return com.vinumeris.updatefx.UFXProtocol.UpdateDescription.getDefaultInstance();
+      }
+
+      public com.vinumeris.updatefx.UFXProtocol.UpdateDescription build() {
+        com.vinumeris.updatefx.UFXProtocol.UpdateDescription result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public com.vinumeris.updatefx.UFXProtocol.UpdateDescription buildPartial() {
+        com.vinumeris.updatefx.UFXProtocol.UpdateDescription result = new com.vinumeris.updatefx.UFXProtocol.UpdateDescription(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.oneLiner_ = oneLiner_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.description_ = description_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.langCode_ = langCode_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.vinumeris.updatefx.UFXProtocol.UpdateDescription) {
+          return mergeFrom((com.vinumeris.updatefx.UFXProtocol.UpdateDescription)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.vinumeris.updatefx.UFXProtocol.UpdateDescription other) {
+        if (other == com.vinumeris.updatefx.UFXProtocol.UpdateDescription.getDefaultInstance()) return this;
+        if (other.hasOneLiner()) {
+          bitField0_ |= 0x00000001;
+          oneLiner_ = other.oneLiner_;
+          onChanged();
+        }
+        if (other.hasDescription()) {
+          bitField0_ |= 0x00000002;
+          description_ = other.description_;
+          onChanged();
+        }
+        if (other.hasLangCode()) {
+          bitField0_ |= 0x00000004;
+          langCode_ = other.langCode_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (!hasOneLiner()) {
+          
+          return false;
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.vinumeris.updatefx.UFXProtocol.UpdateDescription parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (com.vinumeris.updatefx.UFXProtocol.UpdateDescription) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // required string one_liner = 1;
+      private java.lang.Object oneLiner_ = "";
+      /**
+       * <code>required string one_liner = 1;</code>
+       *
+       * <pre>
+       * Textual description of each update that can be shown to the user.
+       * </pre>
+       */
+      public boolean hasOneLiner() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required string one_liner = 1;</code>
+       *
+       * <pre>
+       * Textual description of each update that can be shown to the user.
+       * </pre>
+       */
+      public java.lang.String getOneLiner() {
+        java.lang.Object ref = oneLiner_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          oneLiner_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>required string one_liner = 1;</code>
+       *
+       * <pre>
+       * Textual description of each update that can be shown to the user.
+       * </pre>
+       */
+      public com.google.protobuf.ByteString
+          getOneLinerBytes() {
+        java.lang.Object ref = oneLiner_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          oneLiner_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string one_liner = 1;</code>
+       *
+       * <pre>
+       * Textual description of each update that can be shown to the user.
+       * </pre>
+       */
+      public Builder setOneLiner(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        oneLiner_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string one_liner = 1;</code>
+       *
+       * <pre>
+       * Textual description of each update that can be shown to the user.
+       * </pre>
+       */
+      public Builder clearOneLiner() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        oneLiner_ = getDefaultInstance().getOneLiner();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string one_liner = 1;</code>
+       *
+       * <pre>
+       * Textual description of each update that can be shown to the user.
+       * </pre>
+       */
+      public Builder setOneLinerBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        oneLiner_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string description = 2;
+      private java.lang.Object description_ = "";
+      /**
+       * <code>optional string description = 2;</code>
+       */
+      public boolean hasDescription() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string description = 2;</code>
+       */
+      public java.lang.String getDescription() {
+        java.lang.Object ref = description_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          description_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string description = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getDescriptionBytes() {
+        java.lang.Object ref = description_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          description_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string description = 2;</code>
+       */
+      public Builder setDescription(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        description_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string description = 2;</code>
+       */
+      public Builder clearDescription() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        description_ = getDefaultInstance().getDescription();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string description = 2;</code>
+       */
+      public Builder setDescriptionBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        description_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string lang_code = 3 [default = "en_US"];
+      private java.lang.Object langCode_ = "en_US";
+      /**
+       * <code>optional string lang_code = 3 [default = "en_US"];</code>
+       */
+      public boolean hasLangCode() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional string lang_code = 3 [default = "en_US"];</code>
+       */
+      public java.lang.String getLangCode() {
+        java.lang.Object ref = langCode_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          langCode_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string lang_code = 3 [default = "en_US"];</code>
+       */
+      public com.google.protobuf.ByteString
+          getLangCodeBytes() {
+        java.lang.Object ref = langCode_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          langCode_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string lang_code = 3 [default = "en_US"];</code>
+       */
+      public Builder setLangCode(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        langCode_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string lang_code = 3 [default = "en_US"];</code>
+       */
+      public Builder clearLangCode() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        langCode_ = getDefaultInstance().getLangCode();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string lang_code = 3 [default = "en_US"];</code>
+       */
+      public Builder setLangCodeBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        langCode_ = value;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:com.vinumeris.updatefx.UpdateDescription)
+    }
+
+    static {
+      defaultInstance = new UpdateDescription(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:com.vinumeris.updatefx.UpdateDescription)
+  }
+
   public interface UpdateOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
@@ -126,7 +965,8 @@ public final class UFXProtocol {
      * <code>optional bool gzipped = 7;</code>
      *
      * <pre>
-     * Whether the patch file is gzip compressed.
+     * Whether the patch file is gzip compressed. Take this out after Lighthouse alpha users are all upgraded as it
+     * will always be true.
      * </pre>
      */
     boolean hasGzipped();
@@ -134,10 +974,36 @@ public final class UFXProtocol {
      * <code>optional bool gzipped = 7;</code>
      *
      * <pre>
-     * Whether the patch file is gzip compressed.
+     * Whether the patch file is gzip compressed. Take this out after Lighthouse alpha users are all upgraded as it
+     * will always be true.
      * </pre>
      */
     boolean getGzipped();
+
+    // repeated .com.vinumeris.updatefx.UpdateDescription description = 8;
+    /**
+     * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+     */
+    java.util.List<com.vinumeris.updatefx.UFXProtocol.UpdateDescription> 
+        getDescriptionList();
+    /**
+     * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+     */
+    com.vinumeris.updatefx.UFXProtocol.UpdateDescription getDescription(int index);
+    /**
+     * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+     */
+    int getDescriptionCount();
+    /**
+     * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+     */
+    java.util.List<? extends com.vinumeris.updatefx.UFXProtocol.UpdateDescriptionOrBuilder> 
+        getDescriptionOrBuilderList();
+    /**
+     * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+     */
+    com.vinumeris.updatefx.UFXProtocol.UpdateDescriptionOrBuilder getDescriptionOrBuilder(
+        int index);
   }
   /**
    * Protobuf type {@code com.vinumeris.updatefx.Update}
@@ -228,6 +1094,14 @@ public final class UFXProtocol {
               gzipped_ = input.readBool();
               break;
             }
+            case 66: {
+              if (!((mutable_bitField0_ & 0x00000080) == 0x00000080)) {
+                description_ = new java.util.ArrayList<com.vinumeris.updatefx.UFXProtocol.UpdateDescription>();
+                mutable_bitField0_ |= 0x00000080;
+              }
+              description_.add(input.readMessage(com.vinumeris.updatefx.UFXProtocol.UpdateDescription.PARSER, extensionRegistry));
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -238,6 +1112,9 @@ public final class UFXProtocol {
       } finally {
         if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
           urls_ = new com.google.protobuf.UnmodifiableLazyStringList(urls_);
+        }
+        if (((mutable_bitField0_ & 0x00000080) == 0x00000080)) {
+          description_ = java.util.Collections.unmodifiableList(description_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -428,7 +1305,8 @@ public final class UFXProtocol {
      * <code>optional bool gzipped = 7;</code>
      *
      * <pre>
-     * Whether the patch file is gzip compressed.
+     * Whether the patch file is gzip compressed. Take this out after Lighthouse alpha users are all upgraded as it
+     * will always be true.
      * </pre>
      */
     public boolean hasGzipped() {
@@ -438,11 +1316,48 @@ public final class UFXProtocol {
      * <code>optional bool gzipped = 7;</code>
      *
      * <pre>
-     * Whether the patch file is gzip compressed.
+     * Whether the patch file is gzip compressed. Take this out after Lighthouse alpha users are all upgraded as it
+     * will always be true.
      * </pre>
      */
     public boolean getGzipped() {
       return gzipped_;
+    }
+
+    // repeated .com.vinumeris.updatefx.UpdateDescription description = 8;
+    public static final int DESCRIPTION_FIELD_NUMBER = 8;
+    private java.util.List<com.vinumeris.updatefx.UFXProtocol.UpdateDescription> description_;
+    /**
+     * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+     */
+    public java.util.List<com.vinumeris.updatefx.UFXProtocol.UpdateDescription> getDescriptionList() {
+      return description_;
+    }
+    /**
+     * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+     */
+    public java.util.List<? extends com.vinumeris.updatefx.UFXProtocol.UpdateDescriptionOrBuilder> 
+        getDescriptionOrBuilderList() {
+      return description_;
+    }
+    /**
+     * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+     */
+    public int getDescriptionCount() {
+      return description_.size();
+    }
+    /**
+     * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+     */
+    public com.vinumeris.updatefx.UFXProtocol.UpdateDescription getDescription(int index) {
+      return description_.get(index);
+    }
+    /**
+     * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+     */
+    public com.vinumeris.updatefx.UFXProtocol.UpdateDescriptionOrBuilder getDescriptionOrBuilder(
+        int index) {
+      return description_.get(index);
     }
 
     private void initFields() {
@@ -453,6 +1368,7 @@ public final class UFXProtocol {
       version_ = 0;
       patchSize_ = 0L;
       gzipped_ = false;
+      description_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -478,6 +1394,12 @@ public final class UFXProtocol {
       if (!hasPatchSize()) {
         memoizedIsInitialized = 0;
         return false;
+      }
+      for (int i = 0; i < getDescriptionCount(); i++) {
+        if (!getDescription(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
       }
       memoizedIsInitialized = 1;
       return true;
@@ -506,6 +1428,9 @@ public final class UFXProtocol {
       }
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
         output.writeBool(7, gzipped_);
+      }
+      for (int i = 0; i < description_.size(); i++) {
+        output.writeMessage(8, description_.get(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -548,6 +1473,10 @@ public final class UFXProtocol {
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(7, gzipped_);
+      }
+      for (int i = 0; i < description_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(8, description_.get(i));
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -657,6 +1586,7 @@ public final class UFXProtocol {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getDescriptionFieldBuilder();
         }
       }
       private static Builder create() {
@@ -679,6 +1609,12 @@ public final class UFXProtocol {
         bitField0_ = (bitField0_ & ~0x00000020);
         gzipped_ = false;
         bitField0_ = (bitField0_ & ~0x00000040);
+        if (descriptionBuilder_ == null) {
+          description_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000080);
+        } else {
+          descriptionBuilder_.clear();
+        }
         return this;
       }
 
@@ -737,6 +1673,15 @@ public final class UFXProtocol {
           to_bitField0_ |= 0x00000020;
         }
         result.gzipped_ = gzipped_;
+        if (descriptionBuilder_ == null) {
+          if (((bitField0_ & 0x00000080) == 0x00000080)) {
+            description_ = java.util.Collections.unmodifiableList(description_);
+            bitField0_ = (bitField0_ & ~0x00000080);
+          }
+          result.description_ = description_;
+        } else {
+          result.description_ = descriptionBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -781,6 +1726,32 @@ public final class UFXProtocol {
         if (other.hasGzipped()) {
           setGzipped(other.getGzipped());
         }
+        if (descriptionBuilder_ == null) {
+          if (!other.description_.isEmpty()) {
+            if (description_.isEmpty()) {
+              description_ = other.description_;
+              bitField0_ = (bitField0_ & ~0x00000080);
+            } else {
+              ensureDescriptionIsMutable();
+              description_.addAll(other.description_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.description_.isEmpty()) {
+            if (descriptionBuilder_.isEmpty()) {
+              descriptionBuilder_.dispose();
+              descriptionBuilder_ = null;
+              description_ = other.description_;
+              bitField0_ = (bitField0_ & ~0x00000080);
+              descriptionBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getDescriptionFieldBuilder() : null;
+            } else {
+              descriptionBuilder_.addAllMessages(other.description_);
+            }
+          }
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -805,6 +1776,12 @@ public final class UFXProtocol {
         if (!hasPatchSize()) {
           
           return false;
+        }
+        for (int i = 0; i < getDescriptionCount(); i++) {
+          if (!getDescription(i).isInitialized()) {
+            
+            return false;
+          }
         }
         return true;
       }
@@ -1185,7 +2162,8 @@ public final class UFXProtocol {
        * <code>optional bool gzipped = 7;</code>
        *
        * <pre>
-       * Whether the patch file is gzip compressed.
+       * Whether the patch file is gzip compressed. Take this out after Lighthouse alpha users are all upgraded as it
+       * will always be true.
        * </pre>
        */
       public boolean hasGzipped() {
@@ -1195,7 +2173,8 @@ public final class UFXProtocol {
        * <code>optional bool gzipped = 7;</code>
        *
        * <pre>
-       * Whether the patch file is gzip compressed.
+       * Whether the patch file is gzip compressed. Take this out after Lighthouse alpha users are all upgraded as it
+       * will always be true.
        * </pre>
        */
       public boolean getGzipped() {
@@ -1205,7 +2184,8 @@ public final class UFXProtocol {
        * <code>optional bool gzipped = 7;</code>
        *
        * <pre>
-       * Whether the patch file is gzip compressed.
+       * Whether the patch file is gzip compressed. Take this out after Lighthouse alpha users are all upgraded as it
+       * will always be true.
        * </pre>
        */
       public Builder setGzipped(boolean value) {
@@ -1218,7 +2198,8 @@ public final class UFXProtocol {
        * <code>optional bool gzipped = 7;</code>
        *
        * <pre>
-       * Whether the patch file is gzip compressed.
+       * Whether the patch file is gzip compressed. Take this out after Lighthouse alpha users are all upgraded as it
+       * will always be true.
        * </pre>
        */
       public Builder clearGzipped() {
@@ -1226,6 +2207,246 @@ public final class UFXProtocol {
         gzipped_ = false;
         onChanged();
         return this;
+      }
+
+      // repeated .com.vinumeris.updatefx.UpdateDescription description = 8;
+      private java.util.List<com.vinumeris.updatefx.UFXProtocol.UpdateDescription> description_ =
+        java.util.Collections.emptyList();
+      private void ensureDescriptionIsMutable() {
+        if (!((bitField0_ & 0x00000080) == 0x00000080)) {
+          description_ = new java.util.ArrayList<com.vinumeris.updatefx.UFXProtocol.UpdateDescription>(description_);
+          bitField0_ |= 0x00000080;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          com.vinumeris.updatefx.UFXProtocol.UpdateDescription, com.vinumeris.updatefx.UFXProtocol.UpdateDescription.Builder, com.vinumeris.updatefx.UFXProtocol.UpdateDescriptionOrBuilder> descriptionBuilder_;
+
+      /**
+       * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+       */
+      public java.util.List<com.vinumeris.updatefx.UFXProtocol.UpdateDescription> getDescriptionList() {
+        if (descriptionBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(description_);
+        } else {
+          return descriptionBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+       */
+      public int getDescriptionCount() {
+        if (descriptionBuilder_ == null) {
+          return description_.size();
+        } else {
+          return descriptionBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+       */
+      public com.vinumeris.updatefx.UFXProtocol.UpdateDescription getDescription(int index) {
+        if (descriptionBuilder_ == null) {
+          return description_.get(index);
+        } else {
+          return descriptionBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+       */
+      public Builder setDescription(
+          int index, com.vinumeris.updatefx.UFXProtocol.UpdateDescription value) {
+        if (descriptionBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureDescriptionIsMutable();
+          description_.set(index, value);
+          onChanged();
+        } else {
+          descriptionBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+       */
+      public Builder setDescription(
+          int index, com.vinumeris.updatefx.UFXProtocol.UpdateDescription.Builder builderForValue) {
+        if (descriptionBuilder_ == null) {
+          ensureDescriptionIsMutable();
+          description_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          descriptionBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+       */
+      public Builder addDescription(com.vinumeris.updatefx.UFXProtocol.UpdateDescription value) {
+        if (descriptionBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureDescriptionIsMutable();
+          description_.add(value);
+          onChanged();
+        } else {
+          descriptionBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+       */
+      public Builder addDescription(
+          int index, com.vinumeris.updatefx.UFXProtocol.UpdateDescription value) {
+        if (descriptionBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureDescriptionIsMutable();
+          description_.add(index, value);
+          onChanged();
+        } else {
+          descriptionBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+       */
+      public Builder addDescription(
+          com.vinumeris.updatefx.UFXProtocol.UpdateDescription.Builder builderForValue) {
+        if (descriptionBuilder_ == null) {
+          ensureDescriptionIsMutable();
+          description_.add(builderForValue.build());
+          onChanged();
+        } else {
+          descriptionBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+       */
+      public Builder addDescription(
+          int index, com.vinumeris.updatefx.UFXProtocol.UpdateDescription.Builder builderForValue) {
+        if (descriptionBuilder_ == null) {
+          ensureDescriptionIsMutable();
+          description_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          descriptionBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+       */
+      public Builder addAllDescription(
+          java.lang.Iterable<? extends com.vinumeris.updatefx.UFXProtocol.UpdateDescription> values) {
+        if (descriptionBuilder_ == null) {
+          ensureDescriptionIsMutable();
+          super.addAll(values, description_);
+          onChanged();
+        } else {
+          descriptionBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+       */
+      public Builder clearDescription() {
+        if (descriptionBuilder_ == null) {
+          description_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000080);
+          onChanged();
+        } else {
+          descriptionBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+       */
+      public Builder removeDescription(int index) {
+        if (descriptionBuilder_ == null) {
+          ensureDescriptionIsMutable();
+          description_.remove(index);
+          onChanged();
+        } else {
+          descriptionBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+       */
+      public com.vinumeris.updatefx.UFXProtocol.UpdateDescription.Builder getDescriptionBuilder(
+          int index) {
+        return getDescriptionFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+       */
+      public com.vinumeris.updatefx.UFXProtocol.UpdateDescriptionOrBuilder getDescriptionOrBuilder(
+          int index) {
+        if (descriptionBuilder_ == null) {
+          return description_.get(index);  } else {
+          return descriptionBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+       */
+      public java.util.List<? extends com.vinumeris.updatefx.UFXProtocol.UpdateDescriptionOrBuilder> 
+           getDescriptionOrBuilderList() {
+        if (descriptionBuilder_ != null) {
+          return descriptionBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(description_);
+        }
+      }
+      /**
+       * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+       */
+      public com.vinumeris.updatefx.UFXProtocol.UpdateDescription.Builder addDescriptionBuilder() {
+        return getDescriptionFieldBuilder().addBuilder(
+            com.vinumeris.updatefx.UFXProtocol.UpdateDescription.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+       */
+      public com.vinumeris.updatefx.UFXProtocol.UpdateDescription.Builder addDescriptionBuilder(
+          int index) {
+        return getDescriptionFieldBuilder().addBuilder(
+            index, com.vinumeris.updatefx.UFXProtocol.UpdateDescription.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .com.vinumeris.updatefx.UpdateDescription description = 8;</code>
+       */
+      public java.util.List<com.vinumeris.updatefx.UFXProtocol.UpdateDescription.Builder> 
+           getDescriptionBuilderList() {
+        return getDescriptionFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          com.vinumeris.updatefx.UFXProtocol.UpdateDescription, com.vinumeris.updatefx.UFXProtocol.UpdateDescription.Builder, com.vinumeris.updatefx.UFXProtocol.UpdateDescriptionOrBuilder> 
+          getDescriptionFieldBuilder() {
+        if (descriptionBuilder_ == null) {
+          descriptionBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              com.vinumeris.updatefx.UFXProtocol.UpdateDescription, com.vinumeris.updatefx.UFXProtocol.UpdateDescription.Builder, com.vinumeris.updatefx.UFXProtocol.UpdateDescriptionOrBuilder>(
+                  description_,
+                  ((bitField0_ & 0x00000080) == 0x00000080),
+                  getParentForChildren(),
+                  isClean());
+          description_ = null;
+        }
+        return descriptionBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:com.vinumeris.updatefx.Update)
@@ -2792,6 +4013,11 @@ public final class UFXProtocol {
   }
 
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_com_vinumeris_updatefx_UpdateDescription_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_com_vinumeris_updatefx_UpdateDescription_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_com_vinumeris_updatefx_Update_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -2816,34 +4042,44 @@ public final class UFXProtocol {
   static {
     java.lang.String[] descriptorData = {
       "\n\016updatefx.proto\022\026com.vinumeris.updatefx" +
-      "\"\205\001\n\006Update\022\014\n\004urls\030\001 \003(\t\022\022\n\npatch_hash\030" +
-      "\002 \002(\014\022\020\n\010pre_hash\030\003 \002(\014\022\021\n\tpost_hash\030\004 \002" +
-      "(\014\022\017\n\007version\030\005 \002(\r\022\022\n\npatch_size\030\006 \002(\004\022" +
-      "\017\n\007gzipped\030\007 \001(\010\"K\n\007Updates\022\017\n\007version\030\001" +
-      " \002(\005\022/\n\007updates\030\002 \003(\0132\036.com.vinumeris.up" +
-      "datefx.Update\"4\n\rSignedUpdates\022\017\n\007update" +
-      "s\030\002 \002(\014\022\022\n\nsignatures\030\003 \003(\tB%\n\026com.vinum" +
-      "eris.updatefxB\013UFXProtocol"
+      "\"U\n\021UpdateDescription\022\021\n\tone_liner\030\001 \002(\t" +
+      "\022\023\n\013description\030\002 \001(\t\022\030\n\tlang_code\030\003 \001(\t" +
+      ":\005en_US\"\305\001\n\006Update\022\014\n\004urls\030\001 \003(\t\022\022\n\npatc" +
+      "h_hash\030\002 \002(\014\022\020\n\010pre_hash\030\003 \002(\014\022\021\n\tpost_h" +
+      "ash\030\004 \002(\014\022\017\n\007version\030\005 \002(\r\022\022\n\npatch_size" +
+      "\030\006 \002(\004\022\017\n\007gzipped\030\007 \001(\010\022>\n\013description\030\010" +
+      " \003(\0132).com.vinumeris.updatefx.UpdateDesc" +
+      "ription\"K\n\007Updates\022\017\n\007version\030\001 \002(\005\022/\n\007u" +
+      "pdates\030\002 \003(\0132\036.com.vinumeris.updatefx.Up",
+      "date\"4\n\rSignedUpdates\022\017\n\007updates\030\002 \002(\014\022\022" +
+      "\n\nsignatures\030\003 \003(\tB%\n\026com.vinumeris.upda" +
+      "tefxB\013UFXProtocol"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
         public com.google.protobuf.ExtensionRegistry assignDescriptors(
             com.google.protobuf.Descriptors.FileDescriptor root) {
           descriptor = root;
-          internal_static_com_vinumeris_updatefx_Update_descriptor =
+          internal_static_com_vinumeris_updatefx_UpdateDescription_descriptor =
             getDescriptor().getMessageTypes().get(0);
+          internal_static_com_vinumeris_updatefx_UpdateDescription_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_com_vinumeris_updatefx_UpdateDescription_descriptor,
+              new java.lang.String[] { "OneLiner", "Description", "LangCode", });
+          internal_static_com_vinumeris_updatefx_Update_descriptor =
+            getDescriptor().getMessageTypes().get(1);
           internal_static_com_vinumeris_updatefx_Update_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_com_vinumeris_updatefx_Update_descriptor,
-              new java.lang.String[] { "Urls", "PatchHash", "PreHash", "PostHash", "Version", "PatchSize", "Gzipped", });
+              new java.lang.String[] { "Urls", "PatchHash", "PreHash", "PostHash", "Version", "PatchSize", "Gzipped", "Description", });
           internal_static_com_vinumeris_updatefx_Updates_descriptor =
-            getDescriptor().getMessageTypes().get(1);
+            getDescriptor().getMessageTypes().get(2);
           internal_static_com_vinumeris_updatefx_Updates_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_com_vinumeris_updatefx_Updates_descriptor,
               new java.lang.String[] { "Version", "Updates", });
           internal_static_com_vinumeris_updatefx_SignedUpdates_descriptor =
-            getDescriptor().getMessageTypes().get(2);
+            getDescriptor().getMessageTypes().get(3);
           internal_static_com_vinumeris_updatefx_SignedUpdates_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_com_vinumeris_updatefx_SignedUpdates_descriptor,

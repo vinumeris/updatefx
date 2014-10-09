@@ -45,6 +45,8 @@ public class Updater extends Task<UpdateSummary> {
     private int newHighestVersion;
     private boolean overrideURLs = false;
 
+    private UFXProtocol.Updates verifiedUpdates;
+
     public Updater(String updateBaseURL, String userAgent, int currentVersion, Path localUpdatesDir,
                    Path pathToOrigJar, List<ECPoint> pubkeys, int requiredSigningThreshold) {
         this.updateBaseURL = updateBaseURL.endsWith("/") ? updateBaseURL.substring(0, updateBaseURL.length() - 1) : updateBaseURL;
@@ -70,9 +72,8 @@ public class Updater extends Task<UpdateSummary> {
 
     @Override
     protected UpdateSummary call() throws Exception {
-        UFXProtocol.SignedUpdates signedUpdates = downloadSignedIndex();
-        processSignedIndex(signedUpdates);
-        return new UpdateSummary(newHighestVersion);
+        UFXProtocol.Updates updates = processSignedIndex(downloadSignedIndex());
+        return new UpdateSummary(newHighestVersion, updates);
     }
 
     private UFXProtocol.SignedUpdates downloadSignedIndex() throws IOException, URISyntaxException {
@@ -93,7 +94,7 @@ public class Updater extends Task<UpdateSummary> {
         return connection;
     }
 
-    private void processSignedIndex(UFXProtocol.SignedUpdates signedUpdates) throws IOException, URISyntaxException, Ex, SignatureException {
+    private UFXProtocol.Updates processSignedIndex(UFXProtocol.SignedUpdates signedUpdates) throws IOException, URISyntaxException, Ex, SignatureException {
         UFXProtocol.Updates updates = validateSignatures(signedUpdates);
         if (updates.getVersion() != 1)
             throw new Ex.UnknownIndexVersion();
@@ -112,6 +113,7 @@ public class Updater extends Task<UpdateSummary> {
             List<Path> downloadedUpdates = downloadUpdates(applicableUpdates, bytesToFetch);
             processDownloadedUpdates(applicableUpdates, downloadedUpdates);
         }
+        return updates;
     }
 
     private List<Path> downloadUpdates(LinkedList<UFXProtocol.Update> updates, long bytesToFetch) throws URISyntaxException, IOException, Ex {

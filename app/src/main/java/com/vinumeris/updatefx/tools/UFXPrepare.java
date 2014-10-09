@@ -1,11 +1,5 @@
 package com.vinumeris.updatefx.tools;
 
-import org.bitcoinj.core.ECKey;
-import org.bitcoinj.core.NetworkParameters;
-import org.bitcoinj.core.Wallet;
-import org.bitcoinj.params.MainNetParams;
-import org.bitcoinj.store.UnreadableWalletException;
-import org.bitcoinj.utils.BriefLogFormatter;
 import com.google.common.io.BaseEncoding;
 import com.google.protobuf.ByteString;
 import com.vinumeris.updatefx.DeltaCalculator;
@@ -14,21 +8,33 @@ import com.vinumeris.updatefx.Utils;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
+import org.bitcoinj.core.ECKey;
+import org.bitcoinj.core.NetworkParameters;
+import org.bitcoinj.core.Wallet;
+import org.bitcoinj.params.MainNetParams;
+import org.bitcoinj.store.UnreadableWalletException;
+import org.bitcoinj.utils.BriefLogFormatter;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
 /**
  * This app takes a working directory that contains a subdir called "builds", containing each version of the app
  * named like 1.jar, 2.jar, 3.jar etc. It creates in a subdir called "site" a set of patch files and an index.
- * In the working directory it creates a bitcoinj format wallet that holds signing keys.
+ * In the working directory it creates a bitcoinj format wallet that holds signing keys. If the jar file contains
+ * a file in the root package named "update-description.txt" then the first line is used as the one liner, and the rest
+ * is used as the update description.
  */
 public class UFXPrepare {
     public static void main(String[] args) throws IOException, UnreadableWalletException {
@@ -86,14 +92,36 @@ public class UFXPrepare {
         }
         // Process the jars to remove timestamps and decompress. This does nothing if the zip is already processed.
         // Version ranges can be excluded for compatibility with old Lighthouse versions.
-        // TODO: Once all testers are upgraded, remove this.
+        // TODO: Once all testers are upgraded, remove the backwards compat stuff.
+        // Also extract descriptions, if they exist.
+        Map<Integer, UFXProtocol.UpdateDescription> descriptions = new HashMap<>();
         for (Path path : Utils.listDir(builds)) {
             if (Files.isRegularFile(path) && path.toString().endsWith(".jar")) {
                 int v = Integer.parseInt(path.getFileName().toString().replace(".jar", ""));
                 if (v >= gzipFrom)
                     ProcessZIP.process(path);
+                JarFile jar = new JarFile(path.toFile());
+                JarEntry entry = jar.getJarEntry("update-description.txt");
+                if (entry != null) {
+                    try (InputStream stream = jar.getInputStream(entry)) {
+                        LineNumberReader reader = new LineNumberReader(new BufferedReader(new InputStreamReader(stream)));
+                        String first = reader.readLine();
+                        StringBuilder rest = new StringBuilder();
+                        String tmp;
+                        while ((tmp = reader.readLine()) != null) {
+                            rest.append(tmp);
+                            rest.append("\n");
+                        }
+                        UFXProtocol.UpdateDescription desc = UFXProtocol.UpdateDescription.newBuilder()
+                                .setOneLiner(first)
+                                .setDescription(rest.toString())
+                                .build();
+                        descriptions.put(v, desc);
+                    }
+                }
             }
         }
+
         // Generate the patch files.
         List<DeltaCalculator.Result> patches = DeltaCalculator.process(builds.toAbsolutePath(), site.toAbsolutePath(), gzipFrom);
         // Build an index.
@@ -107,7 +135,6 @@ public class UFXPrepare {
             update.setPatchHash(ByteString.copyFrom(patch.patchHash));
             update.setPostHash(ByteString.copyFrom(patch.postHash));
             update.setGzipped(num >= gzipFrom);
-            System.out.println(patch.path.toString() + ": " + BaseEncoding.base16().encode(update.getPatchHash().toByteArray()));
             for (String baseURL : url.values(options)) {
                 try {
                     URI uri = new URI((baseURL.endsWith("/") ? baseURL : baseURL.concat("/")) + num + ".jar.bpatch");
@@ -117,6 +144,9 @@ public class UFXPrepare {
                     return;
                 }
             }
+            UFXProtocol.UpdateDescription desc = descriptions.get(num);
+            if (desc != null)
+                update.addDescription(desc);
             updates.addUpdates(update);
         }
         // Sign it.

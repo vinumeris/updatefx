@@ -5,6 +5,13 @@ package com.vinumeris.updatefx;
 option java_package = "com.vinumeris.updatefx";
 option java_outer_classname = "UFXProtocol";
 
+message UpdateDescription {
+    // Textual description of each update that can be shown to the user.
+    required string one_liner = 1;
+    optional string description = 2;
+    optional string lang_code = 3 [default="en_US"];
+}
+
 message Update {
     // All URLs for this update are considered to be equivalent. One will be chosen at random.
     repeated string urls = 1;
@@ -20,8 +27,11 @@ message Update {
     // Size in bytes of the file pointed to by URLs.
     required uint64 patch_size = 6;
 
-    // Whether the patch file is gzip compressed.
+    // Whether the patch file is gzip compressed. Take this out after Lighthouse alpha users are all upgraded as it
+    // will always be true.
     optional bool gzipped = 7;
+
+    repeated UpdateDescription description = 8;
 }
 
 message Updates {
