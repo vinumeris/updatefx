@@ -193,25 +193,35 @@ public class UpdateFX {
         return findBestJar(origJarPath, updatesDirectory);
     }
 
+    private static int extractVerFromFilename(Path path) {
+        String fn = path.getFileName().toString();
+        if (!fn.endsWith("jar"))
+            return -1;
+        fn = fn.substring(0, fn.length() - 4);  // Strip extension.
+        try {
+            return Integer.parseInt(fn);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
     private static Path findBestJar(Path origJarPath, Path updatesDirectory) throws IOException {
         if (!Files.isDirectory(updatesDirectory))
             throw new IllegalArgumentException("Not a directory: " + updatesDirectory);
-        int bestUpdateSeen = -1;
+        int bestUpdateSeen = extractVerFromFilename(origJarPath);
         Path bestJarSeen = null;
         for (Path path : Utils.listDir(updatesDirectory)) {
-            if (path.getFileName().toString().endsWith(".jar")) {
-                log.info("Considering {} for bootstrap", path);
-                String fn = path.getFileName().toString();
-                fn = fn.substring(0, fn.length() - 4);  // Strip extension.
-                try {
-                    int n = Integer.parseInt(fn);
+            try {
+                int n = extractVerFromFilename(path);
+                if (n > -1) {
+                    log.info("Considering {} for bootstrap", path);
                     if (n > bestUpdateSeen) {
                         bestUpdateSeen = n;
                         bestJarSeen = path;
                     }
-                } catch (NumberFormatException e) {
-                    log.warn("JAR didn't meet naming criteria: {}", fn);
                 }
+            } catch (NumberFormatException e) {
+                log.warn("JAR didn't meet naming criteria: {}", path);
             }
         }
         if (bestJarSeen == null)
