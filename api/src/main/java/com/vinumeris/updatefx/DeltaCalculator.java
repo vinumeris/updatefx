@@ -53,6 +53,7 @@ public class DeltaCalculator {
             deleteIfExists(deltaFile);
             deltaHashes.path = deltaFile;
 
+            boolean isGzipping = num >= gzipFrom;
             try (
                 HashingOutputStream hashingStream = new HashingOutputStream(Hashing.sha256(),
                         new BufferedOutputStream(
@@ -60,9 +61,16 @@ public class DeltaCalculator {
                         )
                 )
             ) {
-                GZIPOutputStream zipStream = new GZIPOutputStream(hashingStream);
-                boolean isGzipping = num >= gzipFrom;
-                GDiffWriter writer = new GDiffWriter(isGzipping ? zipStream : hashingStream);
+                GZIPOutputStream zipStream = null;
+                GDiffWriter writer;
+                if (isGzipping) {
+                    println("(zipping)");
+                    // Just constructing this object writes to the stream.
+                    zipStream = new GZIPOutputStream(hashingStream);
+                    writer = new GDiffWriter(zipStream);
+                } else {
+                    writer = new GDiffWriter(hashingStream);
+                }
                 Delta delta = new Delta();
                 deltaHashes.preHash = sha256(readAllBytes(prev));
                 delta.compute(prev.toFile(), cur.toFile(), writer);
@@ -73,7 +81,7 @@ public class DeltaCalculator {
             }
             long size = Files.size(deltaFile);
             deltaHashes.patchSize = size;
-            println("... done: %s   (%.2fkb)", deltaFile, size / 1024.0);
+            println("... done: %s   (%.2fkb) %s", deltaFile, size / 1024.0, isGzipping ? "zipped" : "");
             result.add(deltaHashes);
             num++;
         }
