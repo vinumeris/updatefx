@@ -87,6 +87,10 @@ public class ExampleApp extends Application {
                 log.error("oops", e);
             }
         });
+        updater.setOnFailed(event -> {
+            log.error("Update error: {}", updater.getException());
+            updater.getException().printStackTrace();
+        });
 
         indicator.setOnMouseClicked(ev -> UpdateFX.restartApp());
 
