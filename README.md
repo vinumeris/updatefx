@@ -1,20 +1,21 @@
 UpdateFX
 --------
 
-UpdateFX is a small, simple automatic online update framework for JavaFX applications. It was created for apps
-developed by the Bitcoin community and has the following features:
+UpdateFX is a small, simple automatic online update framework for JavaFX applications. It has the following features:
 
 * Chrome-style updates which are downloaded and applied in the background whilst your app is running. A JFX Task is
   provided so you can easily connect download progress to a ProgressIndicator. Once an update has been applied, you
   can offer the user a simple "restart now" button.
 * Each new version of the app is stored to the users home directory, thus administrator privileges are not needed
   to perform an update.
-* Updates are distributed as binary deltas against the app JAR file.
-* The update metadata file (index) is signed using Bitcoin compatible keys, thus the same infrastructure used to
-  protect Bitcoin keys can be reused to protect app signing keys.
-* Threshold signing i.e. you can require at least 3 of 5 public keys to sign an update index for it to be accepted.
+* Updates are distributed as binary deltas against the app JAR file: they are compact.
+* Updates can have titles, descriptions and other metadata that you can optionally display in your UI.
 * Ability for the user to pin themselves to a particular version, so they can downgrade or ignore further updates.
 * Designed for usage with the JavaPackager tool introduced in Java 8.
+* Built for security sensitive apps (originally, apps that work with Bitcoin):
+  * The update metadata file (index) is signed using elliptic curve keys on the secp256k1 curve, thus the same
+    infrastructure used to protect Bitcoin keys can be reused to protect app signing keys.
+  * Threshold signing: you can require at least 3 of 5 public keys to sign an update index for it to be accepted.
 
 Some things it does NOT provide include:
 
@@ -29,7 +30,9 @@ Some features it might provide in future could be:
 * Experiments.
 * Ability to use a TREZOR to store the signing keys.
 
-UpdateFX is [Apache 2.0 licensed](http://www.apache.org/licenses/LICENSE-2.0.html) which essentially means you can use it in proprietary projects if you want.
+UpdateFX is [Apache 2.0 licensed](http://www.apache.org/licenses/LICENSE-2.0.html) which means you can use it in
+proprietary projects if you want. There may in future be a "pro" version that has additional functionality, for a price.
+If you would like commercial support for UpdateFX, please email [mailto:contact@vinumeris.com](Vinumeris GmbH).
 
 How to use: Step 1
 ------------------
@@ -49,6 +52,12 @@ The application's startup sequence must be modified as follows:
 2. Your main class must implement a new `realMain(String[])` method. This is invoked by the bootstrap method
    and is the new entry point of your app: when new versions are in use, this is the earliest point at which they
    get control. All this should do is call launch as normal for a JavaFX app.
+3. In order to work around a bug in JavaFX 8u25 and below, you must include the following code as the first line of your
+   `realMain` method:
+
+   `Thread.currentThread().setContextClassLoader(ExampleApp.class.getClassLoader());`
+
+   where obviously ExampleApp is replaced with the name of your main app class.
 
 At this point, you should be able to drop a new version of your app into your apps data directory called "2.jar" and
 running the original app should actually invoke the new version.
@@ -56,10 +65,10 @@ running the original app should actually invoke the new version.
 How to use: Step 2
 ------------------
 
-You will need to specify a set of Bitcoin secp256k1 public keys used for signing updates. This is NOT the same as the
-usual Java JAR signing infrastructure. Don't worry about this if you don't already have such a key, a tool called
+You will need to specify a set of secp256k1 elliptic curve public keys used for signing updates. This is NOT the same as
+the usual Java JAR signing infrastructure. Don't worry about this if you don't already have such a key, a tool called
 UFXPrepare will create one for you later. For now, just create a `static final List<ECPoint>` (ECPoint
-comes from Bouncy Castle) and use `Crypto.decode()` with an empty argument list. We'll add our key here later.
+comes from Bouncy Castle) and use `Crypto.decode()` with an empty argument list. We'll add our key here in a bit.
 
 Choose a base URL from which updates will be served. For local testing, you can just use a local web server. If you
 have Python installed (MacOS X has this out of the box), you can just create a directory and run
@@ -96,20 +105,24 @@ used. The progress property starts as indeterminate and only starts tracking rea
 downloaded, thus, you can optionally decide to only show some kind of progress indicator if the amount of progress
 is changed. Finally the onSucceeded event can be used to run code when an update has been applied. The most useful
 thing to do here is place a small/subtle indicator that an update is available somewhere in your UI. Don't interrupt
-the user if at all possible. When clicked, offer to restart the app, which you can do by calling `UpdateFX.restartApp`.
+the user if possible, as they may be getting work done. When clicked, offer to restart the app, which you can do
+by calling `UpdateFX.restartApp`.
 
 How to use: step 3
 ------------------
 
-Let's assume you have shipped the first version of your app using javapackager. You need to populate the directory
-on your server with updates. To do this, you use a tool called UFXPrepare. UFXPrepare calculates binary deltas between
-the JARs for each version of your app, then generates an index file that contains the URLs where the update files can be
-found and their hashes, then signs it. The resulting directory can be uploaded to any HTTP server. Note that the
-index file format has the ability to specify multiple URLs to store the actual updates, thus you can spread the files
-around insecure mirrors and rely on the signing of the index file itself for security, although SSL is still recommended.
-Amazon S3 is a good place to stick update deltas (it's free for reasonable amounts of usage).
+The final step is to use the UFXPrepare program. This does several things:
 
-Create a directory where you will work, and then create a subdirectory called builds. The first (shipping) version of
+1. It modifies JAR files to make them more amenable to delta encoded updates. Specifically it decompresses them and
+   zeros out the timestamps in the JAR/ZIP metadata.
+2. It creates and loads a "wallet" file that contains your signing keys.
+3. It reads the different JARs corresponding to different versions of your app and calculates binary deltas between them,
+   then signs a binary index file that contains URLs of the binary deltas.
+4. It extracts update description files from each JAR and includes the text into the index.
+
+Let's assume you have built a bundled jar of the first version of your app.
+
+Create a directory where you will work, and then create a subdirectory called builds. The first version of
 your app should be called 1.jar and placed in this directory. The next version of your app should be called 2.jar and
 also placed in the builds directory (and so on).
 
@@ -117,10 +130,21 @@ Then run
 
 java -jar updatefx-app-1.0-SNAPSHOT.jar --url=http://localhost:8000 /path/to/working/dir
 
-It will create a new subdirectory parallel to "builds" called "site" which contains a 2.jar.bpatch file. This file
-is a binary delta that applies against 1.jar. It will also create a file called "wallet" in the working directory if
-one does not exist: this is a file that contains your signing key (in fact it's a bitcoinj format Bitcoin wallet). Keep
-it safe! The URL parameter is where the *updates* will be served from, not where the index file will be served from.
-For example this can be an Amazon S3 bucket.
+This does two things:
 
-The contents of the site directory can now be published at the URL you hard-coded into your app.
+1. It will create a new subdirectory parallel to "builds" called "site" which contains a 2.jar.bpatch file. This file
+   is a binary delta that applies against 1.jar. It will also create a file called "wallet" in the working directory if
+   one does not exist: this is a file that contains your signing key (in fact it's a bitcoinj format Bitcoin wallet). Keep
+   it safe! The URL parameter is where the *updates* will be served from, not where the index file will be served from.
+   For example this can be an Amazon S3 bucket.
+2. It will modify the JAR files that you have placed inside the builds directory, in place. It will decompress them
+   and zero the timestamps.
+
+The contents of the site directory can now be published at the URL you hard-coded into your app, and the 1.jar file
+that is sitting in the builds directory can now be fed to javapackager to produce the final native packages and
+installers.
+
+If the JAR contains a file called `update-description.txt` then the first line will be used as the title of the update,
+and the rest will be used as the description. These fields are exposed via a list in the UpdateSummary object. You can,
+for example, use this data to populate a window that lets the user pick which version they'd like to downgrade/upgrade
+to.
