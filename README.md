@@ -32,7 +32,7 @@ Some features it might provide in future could be:
 
 UpdateFX is [Apache 2.0 licensed](http://www.apache.org/licenses/LICENSE-2.0.html) which means you can use it in
 proprietary projects if you want. There may in future be a "pro" version that has additional functionality, for a price.
-If you would like commercial support for UpdateFX, please email [mailto:contact@vinumeris.com](Vinumeris GmbH).
+If you would like commercial support for UpdateFX, please email [Vinumeris GmbH](mailto:contact@vinumeris.com).
 
 How to use: Step 1
 ------------------
