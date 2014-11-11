@@ -1,3 +1,5 @@
+Build status: [![Build Status](https://travis-ci.org/vinumeris/updatefx.png?branch=master)](https://travis-ci.org/vinumeris/updatefx)
+
 UpdateFX
 --------
 
@@ -33,6 +35,13 @@ Some features it might provide in future could be:
 UpdateFX is [Apache 2.0 licensed](http://www.apache.org/licenses/LICENSE-2.0.html) which means you can use it in
 proprietary projects if you want. There may in future be a "pro" version that has additional functionality, for a price.
 If you would like commercial support for UpdateFX, please email [Vinumeris GmbH](mailto:contact@vinumeris.com).
+
+Maven coordinates
+-----------------
+
+| Group ID            | Artifact ID | Version |
+| :-----------------: | :---------: | :-----: |
+| com.vinumeris       | updatefx    | 1.0   |
 
 How to use: Step 1
 ------------------
