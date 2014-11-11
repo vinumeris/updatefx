@@ -5,11 +5,18 @@
     <parent>
         <artifactId>updatefx-parent</artifactId>
         <groupId>com.vinumeris</groupId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>updatefx</artifactId>
+
+    <name>updatefx</name>
+    <description>An online update system for jre-bundled JavaFX applications</description>
+
+    <packaging>jar</packaging>
+
+    <url>https://github.com/vinumeris/updatefx</url>
 
     <build>
         <plugins>
@@ -20,6 +27,44 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
+                </configuration>
+            </plugin>
+
+            <!-- Generate source and javadoc jars: Maven Central requires this -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <detectLinks/>
+                    <links>
+                        <link>http://docs.guava-libraries.googlecode.com/git-history/release/javadoc/</link>
+                    </links>
+                    <detectJavaApiLink/>
+                    <excludePackageNames>com.nothome.delta.*</excludePackageNames>
+                    <additionalparam>-Xdoclint:none</additionalparam>
                 </configuration>
             </plugin>
         </plugins>
