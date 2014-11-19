@@ -137,7 +137,7 @@ also placed in the builds directory (and so on).
 
 Then run
 
-java -jar updatefx-app-1.0-SNAPSHOT.jar --url=http://localhost:8000 /path/to/working/dir
+java -jar updatefx-app-1.0.jar --url=http://localhost:8000 /path/to/working/dir
 
 This does two things:
 
