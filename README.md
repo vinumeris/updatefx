@@ -8,9 +8,8 @@ UpdateFX is a small, simple automatic online update framework for JavaFX applica
 * Chrome-style updates which are downloaded and applied in the background whilst your app is running. A JFX Task is
   provided so you can easily connect download progress to a ProgressIndicator. Once an update has been applied, you
   can offer the user a simple "restart now" button.
-* Each new version of the app is stored to the users home directory, thus administrator privileges are not needed
-  to perform an update.
-* Updates are distributed as binary deltas against the app JAR file: they are compact.
+* Each new version of the app is stored to the apps private data directory in the users home area, thus administrator privileges are not needed to perform an update. Example: ~/Library/Application Support on a Mac, C:\Users\USERNAME\AppData\Roaming\AppName on Windows, ~/.local/share/appname on Linux.
+* Updates are distributed as binary deltas against timestamp-normalised, decompressed JAR files: they are compact.
 * Updates can have titles, descriptions and other metadata that you can optionally display in your UI.
 * Ability for the user to pin themselves to a particular version, so they can downgrade or ignore further updates.
 * Designed for usage with the JavaPackager tool introduced in Java 8.
