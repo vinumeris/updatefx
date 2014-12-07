@@ -237,7 +237,7 @@ public class UpdaterTest {
         assertEquals(80, workMax);
         byte[] bits3 = Files.readAllBytes(dir.resolve("3.jar"));
         assertArrayEquals(baseFile, bits3);
-        assertEquals(3, summary.newVersion);
+        assertEquals(3, summary.highestVersion);
     }
 
     @Test
@@ -270,7 +270,7 @@ public class UpdaterTest {
         UpdateSummary summary = updater.call();
         byte[] bits3 = Files.readAllBytes(dir.resolve("3.jar"));
         assertArrayEquals(baseFile, bits3);
-        assertEquals(3, summary.newVersion);
+        assertEquals(3, summary.highestVersion);
     }
 
     @Test

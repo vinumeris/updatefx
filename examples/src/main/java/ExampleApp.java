@@ -78,8 +78,8 @@ public class ExampleApp extends Application {
                     log.info("One liner: {}", summary.descriptions.get(0).getOneLiner());
                     log.info("{}", summary.descriptions.get(0).getDescription());
                 }
-                if (summary.newVersion > VERSION) {
-                    log.info("Restarting to get version " + summary.newVersion);
+                if (summary.highestVersion > VERSION) {
+                    log.info("Restarting to get version " + summary.highestVersion);
                     if (UpdateFX.getVersionPin(AppDirectory.dir()) == 0)
                         UpdateFX.restartApp();
                 }
