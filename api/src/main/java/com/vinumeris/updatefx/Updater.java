@@ -45,8 +45,6 @@ public class Updater extends Task<UpdateSummary> {
     private int newHighestVersion;
     private boolean overrideURLs = false;
 
-    private UFXProtocol.Updates verifiedUpdates;
-
     public Updater(String updateBaseURL, String userAgent, int currentVersion, Path localUpdatesDir,
                    Path pathToOrigJar, List<ECPoint> pubkeys, int requiredSigningThreshold) {
         this.updateBaseURL = updateBaseURL.endsWith("/") ? updateBaseURL.substring(0, updateBaseURL.length() - 1) : updateBaseURL;
