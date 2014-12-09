@@ -27,6 +27,8 @@ import java.util.jar.JarFile
 import java.util.logging.Level
 import java.util.logging.LogManager
 import kotlin.platform.platformStatic
+import org.spongycastle.crypto.params.KeyParameter
+import org.bitcoinj.crypto.KeyCrypter
 
 /**
  * This app takes a working directory that contains a subdir called "builds", containing each version of the app
@@ -132,6 +134,15 @@ public class UFXPrepare {
                 wallet = Wallet.loadFromFile(walletFile.toFile())
             } else {
                 wallet = Wallet(params)
+                println("Creating a new key store (wallet), so you must select a signing key password.")
+                val password1 = askPassword()
+                println("Please enter the password again.")
+                val password2 = askPassword()
+                if (password1 != password2) {
+                    println("Your passwords did not match, quitting")
+                    return
+                }
+                wallet.encrypt(password1)
                 wallet.saveToFile(walletFile.toFile())
             }
             // Process the jars to remove timestamps and decompress. This does nothing if the zip is already processed.
@@ -193,13 +204,35 @@ public class UFXPrepare {
             val signedUpdates = UFXProtocol.SignedUpdates.newBuilder()
             val bits = updates.build().toByteArray()
             val hash = Utils.sha256(bits)
-            val key = wallet.currentReceiveKey()
+            var key = wallet.currentReceiveKey()
+
+            if (key.isEncrypted()) {
+                while (true) {
+                    val password = askPassword()
+                    try {
+                        key = key.decrypt(wallet.getKeyCrypter().deriveKey(password))
+                        break
+                    } catch (e: Exception) {
+                        println("Password is incorrect, please try again")
+                    }
+                }
+            }
+
             val signature = key.signMessage(BaseEncoding.base16().encode(hash).toLowerCase())
             signedUpdates.addSignatures(signature)
             signedUpdates.setUpdates(ByteString.copyFrom(bits))
             // Save the index to the sites dir
             Files.write(site.resolve("index"), signedUpdates.build().toByteArray())
             println("Signed with public key " + BaseEncoding.base16().encode(key.getPubKey()))
+        }
+
+        private fun askPassword(): String {
+            val c = System.console()
+            if (c == null) {
+                println("No console found to request password with, quitting")
+                System.exit(1)
+            }
+            return String(c.readPassword("Enter signing key password: "))
         }
     }
 }
