@@ -7,7 +7,8 @@ UpdateFX is a small, simple automatic online update framework for JavaFX applica
 
 * Chrome-style updates which are downloaded and applied in the background whilst your app is running. A JFX Task is
   provided so you can easily connect download progress to a ProgressIndicator. Once an update has been applied, you
-  can offer the user a simple "restart now" button.
+  can offer the user a simple "restart now" button. The way the update process looks in your UI is entirely up to you.
+  It can be totally silent, very loud and unnoticeable, or anything in between.
 * Each new version of the app is stored to the apps private data directory in the users home area, thus administrator privileges are not needed to perform an update. Example: ~/Library/Application Support on a Mac, C:\Users\USERNAME\AppData\Roaming\AppName on Windows, ~/.local/share/appname on Linux.
 * Updates are distributed as binary deltas against timestamp-normalised, decompressed JAR files: they are compact.
 * Updates can have titles, descriptions and other metadata that you can optionally display in your UI.
@@ -16,14 +17,15 @@ UpdateFX is a small, simple automatic online update framework for JavaFX applica
 * Built for security sensitive apps (originally, apps that work with Bitcoin):
   * The update metadata file (index) is signed using elliptic curve keys on the secp256k1 curve, thus the same
     infrastructure used to protect Bitcoin keys can be reused to protect app signing keys.
-  * Threshold signing: you can require at least 3 of 5 public keys to sign an update index for it to be accepted.
+  * Threshold signing: you can require at least N of M public keys to sign an update index for it to be accepted (e.g. 2 of 2 or 3 of 5)
 
 Some things it does NOT provide include:
 
 * UI specific code for showing release notes, download progress, etc. You are expected to integrate such things into
-  your app in whatever style makes sense for your situation.
+  your app in whatever style makes sense for your situation. You can however reuse UI code from Lighthouse, an app
+  that uses UpdateFX.
 * Ability to update the bundled JVM.
-* Ability to check for updates without applying them.
+* Ability to check for updates without applying them. We might do this in future.
 
 Some features it might provide in future could be:
 
@@ -40,7 +42,7 @@ Maven coordinates
 
 | Group ID            | Artifact ID | Version |
 | :-----------------: | :---------: | :-----: |
-| com.vinumeris       | updatefx    | 1.0   |
+| com.vinumeris       | updatefx    | 1.1     |
 
 How to use: Step 1
 ------------------
@@ -123,7 +125,7 @@ The final step is to use the UFXPrepare program. This does several things:
 
 1. It modifies JAR files to make them more amenable to delta encoded updates. Specifically it decompresses them and
    zeros out the timestamps in the JAR/ZIP metadata.
-2. It creates and loads a "wallet" file that contains your signing keys.
+2. It creates and loads a "wallet" file that contains your signing keys. You will be prompted for a password.
 3. It reads the different JARs corresponding to different versions of your app and calculates binary deltas between them,
    then signs a binary index file that contains URLs of the binary deltas.
 4. It extracts update description files from each JAR and includes the text into the index.
@@ -156,3 +158,28 @@ If the JAR contains a file called `update-description.txt` then the first line w
 and the rest will be used as the description. These fields are exposed via a list in the UpdateSummary object. You can,
 for example, use this data to populate a window that lets the user pick which version they'd like to downgrade/upgrade
 to.
+
+User interface design
+---------------------
+
+UpdateFX does not impose any particular UI design on you. However, you probably do want some kind of user interface :)
+
+[Lighthouse](https://github.com/vinumeris/lighthouse) is the application that drove the need for UpdateFX and it's also
+Apache 2.0 licensed, so you can take code from it if you want to. Lighthouse implements the following user interface
+for updates:
+
+1. A dark notification bar springs up from the bottom of the main window when updates are being downloaded. It contains
+   a progress bar that grows as the updates are fetched (multiple updates being applied at once look identical to a
+   single update). Once the updates are done, the progress bar is replaced with a small restart button. The
+   [NotificationBarPane class](https://github.com/vinumeris/lighthouse/blob/master/client/src/main/java/lighthouse/controls/NotificationBarPane.java)
+   is general and can be used for any bottom-bar based notifications.
+2. The [UpdateFXWindow class](https://github.com/vinumeris/lighthouse/blob/master/client/src/main/java/lighthouse/subwindows/UpdateFXWindow.java)
+   implements a simple UI for showing the user a list of all updates that have been applied,
+   along with a button that lets the user change which version they are running - for example, to downgrade in case of
+   regressions. The window also lets the user pin themselves to a particular version or whatever the latest version is,
+   so users can ensure they don't get accidentally upgraded to a broken version the day before an important business
+   meeting.
+
+   The code in this class probably won't be copy/pasteable directly into your app as it expects various other utility
+   functions and CSS to be present, but you can use it as a starting point if you'd like the same features.
+
