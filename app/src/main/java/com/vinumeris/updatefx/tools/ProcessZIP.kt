@@ -12,9 +12,11 @@ import java.util.zip.*
  */
 public class ProcessZIP {
     class object {
-        public fun process(zipPath: Path) {
+        public fun process(zipPath: Path, destPath: Path) {
             val zeroTime = FileTime.fromMillis(0)
             val outPath = Files.createTempFile("processzip", null)
+
+            var skipped = false
 
             ZipOutputStream(BufferedOutputStream(Files.newOutputStream(outPath))).use { output ->
                 ZipInputStream(BufferedInputStream(Files.newInputStream(zipPath))).use { input ->
@@ -22,27 +24,31 @@ public class ProcessZIP {
                     while (true) {
                         val entry = input.getNextEntry() ?: break
                         // Skip if already processed.
-                        if (entry.getLastModifiedTime().toMillis() != 0L) {
-                            if (!printed) {
-                                System.out.println("Processing " + zipPath)
-                                printed = true
-                            }
-                            entry.setLastModifiedTime(zeroTime)
-                            entry.setCreationTime(zeroTime)
-                            output.setLevel(0)
-                            output.setMethod(ZipOutputStream.STORED)  // No compression.
-                            output.putNextEntry(entry)
-                            ByteStreams.copy(input, output)
-                            input.closeEntry()
-                            output.closeEntry()
+                        if (entry.getLastModifiedTime().toMillis() == 0L) {
+                            skipped = true
+                            break
                         }
+                        if (!printed) {
+                            System.out.println("Processing " + zipPath)
+                            printed = true
+                        }
+                        entry.setLastModifiedTime(zeroTime)
+                        entry.setCreationTime(zeroTime)
+                        output.setLevel(0)
+                        output.setMethod(ZipOutputStream.STORED)  // No compression.
+                        output.putNextEntry(entry)
+                        ByteStreams.copy(input, output)
+                        input.closeEntry()
+                        output.closeEntry()
                     }
                 }
             }
-
-            Files.move(outPath, zipPath, StandardCopyOption.REPLACE_EXISTING)
+            if (!skipped)
+                Files.move(outPath, destPath, StandardCopyOption.REPLACE_EXISTING)
+            else
+                Files.copy(zipPath, destPath, StandardCopyOption.REPLACE_EXISTING)
         }
     }
 }
 
-fun main(args: Array<String>) = ProcessZIP.process(Paths.get(args[0]))
+fun main(args: Array<String>) = ProcessZIP.process(Paths.get(args[0]), Paths.get(args[1]))

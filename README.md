@@ -147,11 +147,12 @@ This does two things:
    one does not exist: this is a file that contains your signing key (in fact it's a bitcoinj format Bitcoin wallet). Keep
    it safe! The URL parameter is where the *updates* will be served from, not where the index file will be served from.
    For example this can be an Amazon S3 bucket.
-2. It will modify the JAR files that you have placed inside the builds directory, in place. It will decompress them
-   and zero the timestamps.
+2. It will create a subdirectory of builds called processed, with modified copies of the JAR files that you have placed
+   inside the builds directory. The processed JARs are decompressed and have zerod timestamps. *You must distribute
+   the processed version in your installers!*
 
 The contents of the site directory can now be published at the URL you hard-coded into your app, and the 1.jar file
-that is sitting in the builds directory can now be fed to javapackager to produce the final native packages and
+that is sitting in the builds/processed directory can now be fed to javapackager to produce the final native packages and
 installers.
 
 If the JAR contains a file called `update-description.txt` then the first line will be used as the title of the update,

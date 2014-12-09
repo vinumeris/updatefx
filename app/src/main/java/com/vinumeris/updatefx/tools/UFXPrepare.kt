@@ -152,12 +152,18 @@ public class UFXPrepare {
             // TODO: Once all testers are upgraded, remove the backwards compat stuff.
             // Also extract descriptions, if they exist.
             val descriptions = HashMap<Int, UFXProtocol.UpdateDescription>()
+            val strippedZipsDir = builds.resolve("processed")
+            if (!Files.isDirectory(strippedZipsDir))
+                Files.createDirectory(strippedZipsDir)
             for (path in Utils.listDir(builds)) {
                 if (Files.isRegularFile(path) && path.toString().endsWith(".jar")) {
                     val v = path.getFileName().toString().replace(".jar", "").toInt()
+                    val processed = strippedZipsDir.resolve(path.getFileName())
                     if (v >= gzipFrom)
-                        ProcessZIP.process(path)
-                    val jar = JarFile(path.toFile())
+                        ProcessZIP.process(path, processed)
+                    else
+                        Files.copy(path, processed)
+                    val jar = JarFile(processed.toFile())
                     val entry = jar.getJarEntry("update-description.txt") ?: continue
                     jar.getInputStream(entry).use { stream ->
                         stream.reader(Charsets.UTF_8).useLines { lines ->
@@ -175,7 +181,7 @@ public class UFXPrepare {
             }
 
             // Generate the patch files.
-            val patches = DeltaCalculator.process(builds.toAbsolutePath(), site.toAbsolutePath(), gzipFrom)
+            val patches = DeltaCalculator.process(strippedZipsDir.toAbsolutePath(), site.toAbsolutePath(), gzipFrom)
             // Build an index.
             val updates = UFXProtocol.Updates.newBuilder()
             for (patch in patches) {
