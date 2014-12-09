@@ -29,6 +29,7 @@ import java.util.logging.LogManager
 import kotlin.platform.platformStatic
 import org.spongycastle.crypto.params.KeyParameter
 import org.bitcoinj.crypto.KeyCrypter
+import org.bitcoinj.crypto.KeyCrypterScrypt
 
 /**
  * This app takes a working directory that contains a subdir called "builds", containing each version of the app
@@ -142,7 +143,8 @@ public class UFXPrepare {
                     println("Your passwords did not match, quitting")
                     return
                 }
-                wallet.encrypt(password1)
+                val crypter = KeyCrypterScrypt(1048576)    // ~2 seconds to decrypt
+                wallet.encrypt(crypter, crypter.deriveKey(password1))
                 wallet.saveToFile(walletFile.toFile())
             }
             // Process the jars to remove timestamps and decompress. This does nothing if the zip is already processed.
