@@ -155,16 +155,22 @@ public class UFXPrepare {
             val strippedZipsDir = builds.resolve("processed")
             if (!Files.isDirectory(strippedZipsDir))
                 Files.createDirectory(strippedZipsDir)
+            val warnings: MutableList<String> = arrayListOf()
             for (path in Utils.listDir(builds)) {
                 if (Files.isRegularFile(path) && path.toString().endsWith(".jar")) {
                     val v = path.getFileName().toString().replace(".jar", "").toInt()
                     val processed = strippedZipsDir.resolve(path.getFileName())
+                    Files.deleteIfExists(processed)
                     if (v >= gzipFrom)
                         ProcessZIP.process(path, processed)
                     else
                         Files.copy(path, processed)
                     val jar = JarFile(processed.toFile())
-                    val entry = jar.getJarEntry("update-description.txt") ?: continue
+                    val entry = jar.getJarEntry("update-description.txt")
+                    if (entry == null) {
+                        warnings.add("WARNING: Update $v does not have any description file!")
+                        continue
+                    }
                     jar.getInputStream(entry).use { stream ->
                         stream.reader(Charsets.UTF_8).useLines { lines ->
                             val l = lines.toList()
@@ -174,6 +180,8 @@ public class UFXPrepare {
                                 if (l.size > 1)
                                     desc.setDescription(l.drop(1).join("\n"))
                                 descriptions.put(v, desc.build())
+                            } else {
+                                warnings.add("WARNING: Update $v has an empty description file!")
                             }
                         }
                     }
@@ -232,6 +240,7 @@ public class UFXPrepare {
             // Save the index to the sites dir
             Files.write(site.resolve("index"), signedUpdates.build().toByteArray())
             println("Signed with public key " + BaseEncoding.base16().encode(key.getPubKey()))
+            warnings.forEach { println(it) }
         }
 
         private fun askPassword(): String {
