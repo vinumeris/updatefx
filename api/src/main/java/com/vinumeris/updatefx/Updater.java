@@ -106,6 +106,7 @@ public class Updater extends Task<UpdateSummary> {
         }
         if (applicableUpdates.isEmpty()) {
             log.info("No updates found: we're fresh!");
+            Updater.this.updateProgress(1L, 1L);
         } else {
             log.info("Found {} applicable updates totalling {} bytes", applicableUpdates.size(), bytesToFetch);
             List<Path> downloadedUpdates = downloadUpdates(applicableUpdates, bytesToFetch);
