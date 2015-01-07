@@ -214,7 +214,7 @@ public class UpdateFX {
             try {
                 int n = extractVerFromFilename(path);
                 if (n > -1) {
-                    log.info("Considering {} for bootstrap", path);
+                    log.debug("Considering {} for bootstrap", path);
                     if (n > bestUpdateSeen) {
                         bestUpdateSeen = n;
                         bestJarSeen = path;
