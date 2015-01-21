@@ -6,30 +6,22 @@ import com.vinumeris.updatefx.DeltaCalculator
 import com.vinumeris.updatefx.UFXProtocol
 import com.vinumeris.updatefx.Utils
 import joptsimple.OptionParser
-import joptsimple.OptionSet
-import joptsimple.OptionSpec
-import org.bitcoinj.core.ECKey
-import org.bitcoinj.core.NetworkParameters
 import org.bitcoinj.core.Wallet
 import org.bitcoinj.params.MainNetParams
-import org.bitcoinj.store.UnreadableWalletException
 import org.bitcoinj.utils.BriefLogFormatter
 
 import java.io.*
 import java.net.URI
 import java.net.URISyntaxException
 import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.HashMap
-import java.util.jar.JarEntry
 import java.util.jar.JarFile
 import java.util.logging.Level
 import java.util.logging.LogManager
 import kotlin.platform.platformStatic
-import org.spongycastle.crypto.params.KeyParameter
-import org.bitcoinj.crypto.KeyCrypter
 import org.bitcoinj.crypto.KeyCrypterScrypt
+import java.nio.file.Path
 
 /**
  * This app takes a working directory that contains a subdir called "builds", containing each version of the app
@@ -81,6 +73,7 @@ public class UFXPrepare {
             val printIndex = parser.accepts("print-index").withRequiredArg()
             // If set, which version to start decompressing jars from and applying gzip to the resulting patch files.
             val gzipFromStr = parser.accepts("gzip-from").withRequiredArg().defaultsTo("-1")
+            val changePassword = parser.accepts("change-password")
             val options = parser.parse(*args)
 
             if (options.has("debuglog")) {
@@ -133,19 +126,14 @@ public class UFXPrepare {
             val wallet: Wallet
             if (Files.exists(walletFile)) {
                 wallet = Wallet.loadFromFile(walletFile.toFile())
+                if (options has changePassword) {
+                    changePassword(wallet, walletFile)
+                    return
+                }
             } else {
                 wallet = Wallet(params)
                 println("Creating a new key store (wallet), so you must select a signing key password.")
-                val password1 = askPassword()
-                println("Please enter the password again.")
-                val password2 = askPassword()
-                if (password1 != password2) {
-                    println("Your passwords did not match, quitting")
-                    return
-                }
-                val crypter = KeyCrypterScrypt(1048576)    // ~2 seconds to decrypt
-                wallet.encrypt(crypter, crypter.deriveKey(password1))
-                wallet.saveToFile(walletFile.toFile())
+                if (changePassword(wallet, walletFile)) return
             }
             // Process the jars to remove timestamps and decompress. This does nothing if the zip is already processed.
             // Version ranges can be excluded for compatibility with old Lighthouse versions.
@@ -241,6 +229,25 @@ public class UFXPrepare {
             Files.write(site.resolve("index"), signedUpdates.build().toByteArray())
             println("Signed with public key " + BaseEncoding.base16().encode(key.getPubKey()))
             warnings.forEach { println(it) }
+        }
+
+        private fun changePassword(wallet: Wallet, walletFile: Path): Boolean {
+            if (wallet.isEncrypted()) {
+                println("Please enter the old password")
+                val oldPassword = askPassword()
+                wallet.decrypt(oldPassword)
+            }
+            val password1 = askPassword()
+            println("Please enter the password again.")
+            val password2 = askPassword()
+            if (password1 != password2) {
+                println("Your passwords did not match, quitting")
+                return true
+            }
+            val crypter = KeyCrypterScrypt(1048576)    // ~2 seconds to decrypt
+            wallet.encrypt(crypter, crypter.deriveKey(password1))
+            wallet.saveToFile(walletFile.toFile())
+            return false
         }
 
         private fun askPassword(): String {
