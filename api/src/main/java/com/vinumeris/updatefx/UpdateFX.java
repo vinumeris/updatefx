@@ -95,7 +95,7 @@ public class UpdateFX {
                     return exe;
                 }
             }
-            throw new IllegalStateException("We did not found the application.");
+            throw new IllegalStateException("We did not find the application.");
         } else {
             // Linux, Windows and other similar systems, we hope (not Android).
             // Binary is in the top level of the app installd dir (/opt/appname/AppName) along with a few other files.
