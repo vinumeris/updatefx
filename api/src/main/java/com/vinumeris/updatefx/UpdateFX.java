@@ -85,9 +85,17 @@ public class UpdateFX {
         if (os.contains("mac")) {
             // Returns path to the .app directory, which normally contains only a Contents directory.
             List<Path> exes = Utils.listDir(appInstallDir.resolve("Contents/MacOS"));
-            if (exes.size() != 1)
-                throw new IllegalStateException("Found unknown number of app executables");
-            return exes.get(0);
+            for (Path exe : exes) {
+                /**
+                 * Since 8u40, the packager introduced a "libpackager.dylib"
+                 * next to the application. So we only need to ignore that file
+                 * and take the other one.
+                 */
+                if (!exe.toString().toLowerCase().endsWith(".dylib")) {
+                    return exe;
+                }
+            }
+            throw new IllegalStateException("We did not find the application.");
         } else {
             // Linux, Windows and other similar systems, we hope (not Android).
             // Binary is in the top level of the app installd dir (/opt/appname/AppName) along with a few other files.
