@@ -150,7 +150,7 @@ public class UpdateFX {
     public static void pinToVersion(Path updatesDirectory, int version) {
         try {
             Path pinPath = updatesDirectory.resolve(VERSION_PIN_FILE_NAME);
-            Files.write(pinPath, String.valueOf(version).getBytes(), StandardOpenOption.CREATE_NEW);
+            Files.write(pinPath, String.valueOf(version).getBytes(), StandardOpenOption.WRITE, StandardOpenOption.CREATE);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -201,7 +201,7 @@ public class UpdateFX {
         return findBestJar(origJarPath, updatesDirectory);
     }
 
-    private static int extractVerFromFilename(Path path) {
+    /*package*/ static int extractVerFromFilename(Path path) {
         String fn = path.getFileName().toString();
         if (!fn.endsWith("jar"))
             return -1;
@@ -213,7 +213,7 @@ public class UpdateFX {
         }
     }
 
-    private static Path findBestJar(Path origJarPath, Path updatesDirectory) throws IOException {
+    /*package*/ static Path findBestJar(Path origJarPath, Path updatesDirectory) throws IOException {
         if (!Files.isDirectory(updatesDirectory))
             throw new IllegalArgumentException("Not a directory: " + updatesDirectory);
         int bestUpdateSeen = extractVerFromFilename(origJarPath);
@@ -222,7 +222,6 @@ public class UpdateFX {
             try {
                 int n = extractVerFromFilename(path);
                 if (n > -1) {
-                    log.debug("Considering {} for bootstrap", path);
                     if (n > bestUpdateSeen) {
                         bestUpdateSeen = n;
                         bestJarSeen = path;

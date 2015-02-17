@@ -11,8 +11,7 @@ import org.junit.Test;
 import java.io.FileNotFoundException;
 import java.math.BigInteger;
 import java.net.InetSocketAddress;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.util.*;
@@ -73,7 +72,7 @@ public class UpdaterTest {
 
     public class TestUpdater extends Updater {
         public TestUpdater(String updateBaseURL, String userAgent, int currentVersion, Path localUpdatesDir, Path pathToOrigJar) {
-            super(updateBaseURL, userAgent, currentVersion, localUpdatesDir, pathToOrigJar, pubKeys, 2);
+            super(updateBaseURL, userAgent, currentVersion, localUpdatesDir, pathToOrigJar == null ? Paths.get("/1.jar") : pathToOrigJar, pubKeys, 2);
         }
 
         @Override
@@ -271,6 +270,45 @@ public class UpdaterTest {
         byte[] bits3 = Files.readAllBytes(dir.resolve("3.jar"));
         assertArrayEquals(baseFile, bits3);
         assertEquals(3, summary.highestVersion);
+    }
+
+    @Test
+    public void updateRunWithPinning() throws Exception {
+        // Update from v2 to v3, whilst we are pinned to v2.
+        Path working = dir.resolve("working");
+        createDirectory(working);
+        byte[] baseFile = new byte[2048];
+        Arrays.fill(baseFile, (byte) 1);
+        Path jar1 = working.resolve("1.jar");
+        write(jar1, baseFile, CREATE_NEW);
+        baseFile[0] = 2;
+        Path baseJar = working.resolve("2.jar");
+        write(baseJar, baseFile, CREATE_NEW);
+        baseFile[0] = 3;
+        Path jar3 = working.resolve("3.jar");
+        write(jar3, baseFile, CREATE_NEW);
+        DeltaCalculator.process(working.toAbsolutePath(), working.toAbsolutePath(), -1);
+        Path bpatch2 = working.resolve("2.jar.bpatch");
+        assertTrue(exists(bpatch2));
+        Path bpatch3 = working.resolve("3.jar.bpatch");
+        assertTrue(exists(bpatch3));
+        byte[] bpatch1bits = readAllBytes(bpatch2);
+        byte[] bpatch2bits = readAllBytes(bpatch3);
+        paths.put("/2.jar.bpatch", bpatch1bits);
+        paths.put("/3.jar.bpatch", bpatch2bits);
+        configureIndex(sha256(readAllBytes(jar1)), sha256(bpatch1bits), sha256(readAllBytes(baseJar)),
+                sha256(readAllBytes(baseJar)), sha256(bpatch2bits), sha256(readAllBytes(jar3)));
+
+        UpdateFX.pinToVersion(dir, 2);
+        UpdateFX.pinToVersion(dir, 1);
+
+        updater = new TestUpdater(baseURL, "UnitTest", 1, dir, baseJar);
+        UpdateSummary summary = updater.call();
+        byte[] bits3 = Files.readAllBytes(dir.resolve("3.jar"));
+        assertArrayEquals(baseFile, bits3);
+        assertEquals(3, summary.highestVersion);
+
+        UpdateFX.unpin(dir);
     }
 
     @Test

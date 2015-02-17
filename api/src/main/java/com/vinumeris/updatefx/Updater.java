@@ -35,7 +35,7 @@ public class Updater extends Task<UpdateSummary> {
 
     private final String updateBaseURL;
     private final String userAgent;
-    private final int currentVersion;
+    private int highestLocalVersion;
     private final Path localUpdatesDir;
     private final Path pathToOrigJar;
     private final List<ECPoint> pubkeys;
@@ -49,13 +49,10 @@ public class Updater extends Task<UpdateSummary> {
                    Path pathToOrigJar, List<ECPoint> pubkeys, int requiredSigningThreshold) {
         this.updateBaseURL = updateBaseURL.endsWith("/") ? updateBaseURL.substring(0, updateBaseURL.length() - 1) : updateBaseURL;
         this.userAgent = userAgent;
-        this.currentVersion = currentVersion;
         this.localUpdatesDir = localUpdatesDir;
         this.pathToOrigJar = pathToOrigJar;
         this.pubkeys = pubkeys;
         this.requiredSigningThreshold = requiredSigningThreshold;
-
-        newHighestVersion = currentVersion;
     }
 
     /**
@@ -70,6 +67,8 @@ public class Updater extends Task<UpdateSummary> {
 
     @Override
     protected UpdateSummary call() throws Exception {
+        highestLocalVersion = UpdateFX.extractVerFromFilename(UpdateFX.findBestJar(pathToOrigJar, localUpdatesDir));
+        newHighestVersion = highestLocalVersion;
         UFXProtocol.Updates updates = processSignedIndex(downloadSignedIndex());
         return new UpdateSummary(newHighestVersion, updates);
     }
@@ -99,14 +98,13 @@ public class Updater extends Task<UpdateSummary> {
         LinkedList<UFXProtocol.Update> applicableUpdates = new LinkedList<>();
         long bytesToFetch = 0;
         for (UFXProtocol.Update update : updates.getUpdatesList()) {
-            if (update.getVersion() > currentVersion) {
+            if (update.getVersion() > highestLocalVersion) {
                 applicableUpdates.add(update);
                 bytesToFetch += update.getPatchSize();
             }
         }
         if (applicableUpdates.isEmpty()) {
             log.info("No updates found: we're fresh!");
-            Updater.this.updateProgress(1L, 1L);
         } else {
             log.info("Found {} applicable updates totalling {} bytes", applicableUpdates.size(), bytesToFetch);
             List<Path> downloadedUpdates = downloadUpdates(applicableUpdates, bytesToFetch);
@@ -118,7 +116,7 @@ public class Updater extends Task<UpdateSummary> {
     private List<Path> downloadUpdates(LinkedList<UFXProtocol.Update> updates, long bytesToFetch) throws URISyntaxException, IOException, Ex {
         LinkedList<Path> files = new LinkedList<>();
         if (updates.isEmpty()) return files;
-        Updater.this.updateProgress(0, bytesToFetch);
+        updateProgress(0, bytesToFetch);
         for (UFXProtocol.Update update : updates) {
             if (update.getUrlsCount() == 0)
                 throw new IllegalStateException("Bad update definition: no URLs");
@@ -171,7 +169,7 @@ public class Updater extends Task<UpdateSummary> {
         for (Path path : files) {
             UFXProtocol.Update update = updates.get(cursor);
             Path base = pathToOrigJar;
-            if (update.getVersion() > currentVersion + 1)
+            if (update.getVersion() > highestLocalVersion + 1)
                 base = localUpdatesDir.resolve((update.getVersion() - 1) + ".jar");
             Path next = localUpdatesDir.resolve(update.getVersion() + ".jar");
             log.info("Applying patch {} to {}", path, base);
