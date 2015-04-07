@@ -11,7 +11,7 @@ import java.util.zip.*
  * for delta calculation.
  */
 public class ProcessZIP {
-    class object {
+    companion object {
         public fun process(zipPath: Path, destPath: Path) {
             val zeroTime = FileTime.fromMillis(0)
             val outPath = Files.createTempFile("processzip", null)

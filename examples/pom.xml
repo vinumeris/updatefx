@@ -60,7 +60,7 @@
         <dependency>
             <groupId>com.vinumeris</groupId>
             <artifactId>updatefx</artifactId>
-            <version>1.3-SNAPSHOT</version>
+            <version>1.4-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

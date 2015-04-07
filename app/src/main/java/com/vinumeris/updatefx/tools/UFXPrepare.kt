@@ -31,7 +31,7 @@ import java.nio.file.Path
  * is used as the update description.
  */
 public class UFXPrepare {
-    class object {
+    companion object {
         private fun printIndex(file: File) {
             val proto = UFXProtocol.SignedUpdates.parseFrom(file.readBytes())
             val updates = UFXProtocol.Updates.parseFrom(proto.getUpdates())

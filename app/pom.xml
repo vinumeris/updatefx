@@ -3,7 +3,7 @@
     <parent>
         <artifactId>updatefx-parent</artifactId>
         <groupId>com.vinumeris</groupId>
-        <version>1.3</version>
+        <version>1.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -85,7 +85,7 @@
         <dependency>
             <groupId>com.vinumeris</groupId>
             <artifactId>updatefx</artifactId>
-            <version>1.3-SNAPSHOT</version>
+            <version>${parent.version}</version>
         </dependency>
         <dependency>
             <groupId>org.bitcoinj</groupId>
@@ -104,6 +104,6 @@
         </dependency>
     </dependencies>
     <properties>
-        <kotlin.version>0.9.206</kotlin.version>
+        <kotlin.version>0.11.91.1</kotlin.version>
     </properties>
 </project>
