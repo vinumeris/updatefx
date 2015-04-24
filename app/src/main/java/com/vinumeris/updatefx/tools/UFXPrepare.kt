@@ -5,23 +5,24 @@ import com.google.protobuf.ByteString
 import com.vinumeris.updatefx.DeltaCalculator
 import com.vinumeris.updatefx.UFXProtocol
 import com.vinumeris.updatefx.Utils
+import joptsimple.ArgumentAcceptingOptionSpec
 import joptsimple.OptionParser
+import joptsimple.OptionSet
 import org.bitcoinj.core.Wallet
+import org.bitcoinj.crypto.KeyCrypterScrypt
 import org.bitcoinj.params.MainNetParams
 import org.bitcoinj.utils.BriefLogFormatter
-
-import java.io.*
+import java.io.File
 import java.net.URI
 import java.net.URISyntaxException
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.HashMap
 import java.util.jar.JarFile
 import java.util.logging.Level
 import java.util.logging.LogManager
 import kotlin.platform.platformStatic
-import org.bitcoinj.crypto.KeyCrypterScrypt
-import java.nio.file.Path
 
 /**
  * This app takes a working directory that contains a subdir called "builds", containing each version of the app
@@ -59,7 +60,7 @@ public class UFXPrepare {
                 for (url in update.getUrlsList()) {
                     println("  $url")
                 }
-                if (update != updates.getUpdatesList().last)
+                if (update != updates.getUpdatesList().last())
                     println("----------")
             }
         }
@@ -74,6 +75,7 @@ public class UFXPrepare {
             // If set, which version to start decompressing jars from and applying gzip to the resulting patch files.
             val gzipFromStr = parser.accepts("gzip-from").withRequiredArg().defaultsTo("-1")
             val changePassword = parser.accepts("change-password")
+            val onlyVer = parser.accepts("ver").withRequiredArg().ofType(javaClass<Int>())
             val options = parser.parse(*args)
 
             if (options.has("debuglog")) {
@@ -144,64 +146,40 @@ public class UFXPrepare {
             if (!Files.isDirectory(strippedZipsDir))
                 Files.createDirectory(strippedZipsDir)
             val warnings: MutableList<String> = arrayListOf()
-            for (path in Utils.listDir(builds)) {
-                if (Files.isRegularFile(path) && path.toString().endsWith(".jar")) {
-                    val v = path.getFileName().toString().replace(".jar", "").toInt()
-                    val processed = strippedZipsDir.resolve(path.getFileName())
-                    Files.deleteIfExists(processed)
-                    if (v >= gzipFrom)
-                        ProcessZIP.process(path, processed)
-                    else
-                        Files.copy(path, processed)
-                    val jar = JarFile(processed.toFile())
-                    val entry = jar.getJarEntry("update-description.txt")
-                    if (entry == null) {
-                        warnings.add("WARNING: Update $v does not have any description file!")
-                        continue
-                    }
-                    jar.getInputStream(entry).use { stream ->
-                        stream.reader(Charsets.UTF_8).useLines { lines ->
-                            val l = lines.toList()
-                            if (l.size > 0) {
-                                val desc = UFXProtocol.UpdateDescription.newBuilder()
-                                desc.setOneLiner(l.first())
-                                if (l.size > 1)
-                                    desc.setDescription(l.drop(1).join("\n"))
-                                descriptions.put(v, desc.build())
-                            } else {
-                                warnings.add("WARNING: Update $v has an empty description file!")
-                            }
-                        }
+
+            if (options.has(onlyVer)) {
+                val path = builds.resolve("${options.valueOf(onlyVer)}.jar")
+                if (!Files.isRegularFile(path)) {
+                    println("Could not find $path")
+                    return
+                }
+                processBuild(path, gzipFrom, descriptions, strippedZipsDir, warnings)
+            } else {
+                for (path in Utils.listDir(builds)) {
+                    if (Files.isRegularFile(path) && path.toString().endsWith(".jar")) {
+                        processBuild(path, gzipFrom, descriptions, strippedZipsDir, warnings)
                     }
                 }
             }
 
-            // Generate the patch files.
-            val patches = DeltaCalculator.process(strippedZipsDir.toAbsolutePath(), site.toAbsolutePath(), gzipFrom)
-            // Build an index.
             val updates = UFXProtocol.Updates.newBuilder()
-            for (patch in patches) {
-                val update = UFXProtocol.Update.newBuilder()
-                val num = Integer.parseInt(patch.path.getFileName().toString().replaceAll("\\.jar\\.bpatch", ""))
-                update.setVersion(num)
-                update.setPatchSize(patch.patchSize)
-                update.setPreHash(ByteString.copyFrom(patch.preHash))
-                update.setPatchHash(ByteString.copyFrom(patch.patchHash))
-                update.setPostHash(ByteString.copyFrom(patch.postHash))
-                update.setGzipped(num >= gzipFrom)
-                for (baseURL in url.values(options)) {
-                    try {
-                        val uri = URI((if (baseURL.endsWith("/")) baseURL else baseURL.concat("/")) + num + ".jar.bpatch")
-                        update.addUrls(uri.toString())
-                    } catch (e: URISyntaxException) {
-                        println("Base URL is malformed: $baseURL")
-                        return
-                    }
+            if (options.has(onlyVer)) {
+                val oldIndex = UFXProtocol.SignedUpdates.parseFrom(site.resolve("index").toFile().readBytes())
+                val v = options.valueOf(onlyVer)
+                val cur = strippedZipsDir.resolve("$v.jar")
+                val prev = strippedZipsDir.resolve("${v - 1}.jar")
+                val patch = DeltaCalculator.processFile(prev, cur, site.toAbsolutePath(), v, gzipFrom)
+                val oldUpdates = UFXProtocol.Updates.parseFrom(oldIndex.getUpdates())
+                updates.mergeFrom(oldUpdates)
+                updates.addUpdates(patchToProto(descriptions, gzipFrom, patch, url.values(options)))
+            } else {
+                // Generate the patch files.
+                val patches = DeltaCalculator.process(strippedZipsDir.toAbsolutePath(), site.toAbsolutePath(), gzipFrom)
+                // Build an index.
+                for (patch in patches) {
+                    val proto = patchToProto(descriptions, gzipFrom, patch, url.values(options))
+                    updates.addUpdates(proto)
                 }
-                val desc = descriptions.get(num)
-                if (desc != null)
-                    update.addDescription(desc)
-                updates.addUpdates(update)
             }
             // Sign it.
             updates.setVersion(1)
@@ -231,6 +209,30 @@ public class UFXPrepare {
             warnings.forEach { println(it) }
         }
 
+        private fun patchToProto(descriptions: HashMap<Int, UFXProtocol.UpdateDescription>, gzipFrom: Int, patch: DeltaCalculator.Result, urls: List<String>): UFXProtocol.Update.Builder {
+            val update = UFXProtocol.Update.newBuilder()
+            val num = Integer.parseInt(patch.path.getFileName().toString().replaceAll("\\.jar\\.bpatch", ""))
+            update.setVersion(num)
+            update.setPatchSize(patch.patchSize)
+            update.setPreHash(ByteString.copyFrom(patch.preHash))
+            update.setPatchHash(ByteString.copyFrom(patch.patchHash))
+            update.setPostHash(ByteString.copyFrom(patch.postHash))
+            update.setGzipped(num >= gzipFrom)
+            for (baseURL in urls) {
+                try {
+                    val uri = URI((if (baseURL.endsWith("/")) baseURL else baseURL.concat("/")) + num + ".jar.bpatch")
+                    update.addUrls(uri.toString())
+                } catch (e: URISyntaxException) {
+                    println("Base URL is malformed: $baseURL")
+                    throw e
+                }
+            }
+            val desc = descriptions.get(num)
+            if (desc != null)
+                update.addDescription(desc)
+            return update
+        }
+
         private fun changePassword(wallet: Wallet, walletFile: Path): Boolean {
             if (wallet.isEncrypted()) {
                 println("Please enter the old password")
@@ -257,6 +259,36 @@ public class UFXPrepare {
                 System.exit(1)
             }
             return String(c.readPassword("Enter signing key password: "))
+        }
+
+        private fun processBuild(path: Path, gzipFrom: Int, descriptions: HashMap<Int, UFXProtocol.UpdateDescription>, strippedZipsDir: Path, warnings: MutableList<String>) {
+            val v = path.getFileName().toString().replace(".jar", "").toInt()
+            val processed = strippedZipsDir.resolve(path.getFileName())
+            Files.deleteIfExists(processed)
+            if (v >= gzipFrom)
+                ProcessZIP.process(path, processed)
+            else
+                Files.copy(path, processed)
+            val jar = JarFile(processed.toFile())
+            val entry = jar.getJarEntry("update-description.txt")
+            if (entry == null) {
+                warnings.add("WARNING: Update $v does not have any description file!")
+                return
+            }
+            jar.getInputStream(entry).use { stream ->
+                stream.reader(Charsets.UTF_8).useLines { lines ->
+                    val l = lines.toList()
+                    if (l.size() > 0) {
+                        val desc = UFXProtocol.UpdateDescription.newBuilder()
+                        desc.setOneLiner(l.first())
+                        if (l.size() > 1)
+                            desc.setDescription(l.drop(1).join("\n"))
+                        descriptions.put(v, desc.build())
+                    } else {
+                        warnings.add("WARNING: Update $v has an empty description file!")
+                    }
+                }
+            }
         }
     }
 }

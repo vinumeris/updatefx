@@ -21,7 +21,7 @@ import java.util.logging.FileHandler;
 
 public class ExampleApp extends Application {
     private static final Logger log = LoggerFactory.getLogger(ExampleApp.class);
-    public static int VERSION = 1;
+    public static int VERSION = 3;
 
     public static void main(String[] args) throws IOException {
         // We want to store updates in our app dir so must init that here.
