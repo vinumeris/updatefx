@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.FileHandler;
@@ -56,10 +57,11 @@ public class ExampleApp extends Application {
 
         ProgressIndicator indicator = showGiantProgressWheel(primaryStage);
 
-        List<ECPoint> pubkeys = Crypto.decode("020044E154894596A94EF649DC203358C27A310DDBE4D22646AC56BC8FB0BFBAFB");
-        Updater updater = new Updater("http://localhost:8000/", "ExampleApp/" + VERSION, VERSION,
-                AppDirectory.dir(), UpdateFX.findCodePath(ExampleApp.class),
-                pubkeys, 1) {
+        List<ECPoint> pubkeys = Crypto.decode(
+                "020044E154894596A94EF649DC203358C27A310DDBE4D22646AC56BC8FB0BFBAFB",
+                "0292BAC95D764ADBF15367ABE490708753FE2E92760F7C9FF6951EE558F57AE407");
+        Updater updater = new Updater(URI.create("http://localhost:8000/index"), "ExampleApp/" + VERSION,
+                AppDirectory.dir(), UpdateFX.findCodePath(ExampleApp.class), pubkeys, 1) {
             @Override
             protected void updateProgress(long workDone, long max) {
                 super.updateProgress(workDone, max);

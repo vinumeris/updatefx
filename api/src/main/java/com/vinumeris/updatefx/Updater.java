@@ -33,7 +33,7 @@ import static java.nio.file.Files.*;
 public class Updater extends Task<UpdateSummary> {
     private static final Logger log = LoggerFactory.getLogger(Updater.class);
 
-    private final String updateBaseURL;
+    private final URI indexURL;
     private final String userAgent;
     private int highestLocalVersion;
     private final Path localUpdatesDir;
@@ -45,9 +45,20 @@ public class Updater extends Task<UpdateSummary> {
     private int newHighestVersion;
     private boolean overrideURLs = false;
 
-    public Updater(String updateBaseURL, String userAgent, int currentVersion, Path localUpdatesDir,
+    /**
+     * Constructs a new class that when call()ed, will do an update check, download any new update deltas and apply
+     * them and so on.
+     *
+     * @param indexURL The URL of a signed index file.
+     * @param userAgent What to report to the HTTP[S] server in the User-Agent field
+     * @param localUpdatesDir Where to store temporary files and new JAR versions
+     * @param pathToOrigJar Where to find the original JAR that shipped with the app, normally you would use {@link UpdateFX#findCodePath(Class)} for this
+     * @param pubkeys List of public keys, normally you would use {@link Crypto#decode(String...)} to get this list.
+     * @param requiredSigningThreshold How many of the keys need to be found in the signed index for it to be valid.
+     */
+    public Updater(URI indexURL, String userAgent, Path localUpdatesDir,
                    Path pathToOrigJar, List<ECPoint> pubkeys, int requiredSigningThreshold) {
-        this.updateBaseURL = updateBaseURL.endsWith("/") ? updateBaseURL.substring(0, updateBaseURL.length() - 1) : updateBaseURL;
+        this.indexURL = indexURL;
         this.userAgent = userAgent;
         this.localUpdatesDir = localUpdatesDir;
         this.pathToOrigJar = pathToOrigJar;
@@ -57,8 +68,8 @@ public class Updater extends Task<UpdateSummary> {
 
     /**
      * If true, then any URLs found in the index file will be ignored, and their file name will be appended to the
-     * updateBaseURL instead. This is useful when you wish to test a new index locally before uploading it to your
-     * web server: by setting an updateBaseURL of localhost and setting this to true, updates will be downloaded
+     * same path as used by indexURL instead. This is useful when you wish to test a new index locally before uploading
+     * it to your web server: by setting an indexURL of localhost and setting this to true, updates will be downloaded
      * from a local web server instead.
      */
     public void setOverrideURLs(boolean overrideURLs) {
@@ -74,9 +85,8 @@ public class Updater extends Task<UpdateSummary> {
     }
 
     private UFXProtocol.SignedUpdates downloadSignedIndex() throws IOException, URISyntaxException {
-        URI url = new URI(updateBaseURL + "/index");
-        log.info("Requesting " + url);
-        URLConnection connection = openURL(url);
+        log.info("Requesting " + indexURL);
+        URLConnection connection = openURL(indexURL);
         // Limit to 10mb in case something weird happens and we get an infinite stream of junk. 10mb of update
         // metadata is wildly excessive anyway.
         return UFXProtocol.SignedUpdates.parseFrom(ByteStreams.limit(connection.getInputStream(), 10 * 1024 * 1024));
@@ -199,7 +209,7 @@ public class Updater extends Task<UpdateSummary> {
         if (!overrideURLs) return url;
 
         String[] split = url.getPath().split("/");
-        return new URI(updateBaseURL + "/" + split[split.length - 1]).normalize();
+        return new URI(indexURL.resolve(".") + "/" + split[split.length - 1]).normalize();
     }
 
     private HashingOutputStream hashingFileStream(Path outfile) throws IOException {

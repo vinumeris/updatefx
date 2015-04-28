@@ -1,25 +1,22 @@
 package com.vinumeris.updatefx;
 
-import com.google.common.hash.Hashing;
-import com.google.protobuf.ByteString;
-import com.sun.net.httpserver.HttpServer;
-import org.bouncycastle.math.ec.ECPoint;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import com.google.common.hash.*;
+import com.google.protobuf.*;
+import com.sun.net.httpserver.*;
+import org.bouncycastle.math.ec.*;
+import org.junit.*;
 
-import java.io.FileNotFoundException;
-import java.math.BigInteger;
-import java.net.InetSocketAddress;
+import java.io.*;
+import java.math.*;
+import java.net.*;
 import java.nio.file.*;
-import java.security.SecureRandom;
-import java.security.SignatureException;
+import java.security.*;
 import java.util.*;
 
-import static com.vinumeris.updatefx.Utils.sha256;
-import static java.net.HttpURLConnection.HTTP_OK;
+import static com.vinumeris.updatefx.Utils.*;
+import static java.net.HttpURLConnection.*;
 import static java.nio.file.Files.*;
-import static java.nio.file.StandardOpenOption.CREATE_NEW;
+import static java.nio.file.StandardOpenOption.*;
 import static org.junit.Assert.*;
 
 public class UpdaterTest {
@@ -29,7 +26,7 @@ public class UpdaterTest {
     private Map<String, byte[]> paths;
     private Updater updater;
     private Path dir;
-    private String baseURL;
+    private URI indexURL;
 
     private long workDone, workMax;
 
@@ -60,7 +57,7 @@ public class UpdaterTest {
         localServer.start();
 
         dir = createTempDirectory("updatefx");
-        baseURL = "http://localhost:" + HTTP_LOCAL_TEST_PORT + SERVER_PATH;
+        indexURL = URI.create("http://localhost:" + HTTP_LOCAL_TEST_PORT + SERVER_PATH + "/index");
 
         privKeys = new LinkedList<>();
         SecureRandom rnd = new SecureRandom();
@@ -71,8 +68,8 @@ public class UpdaterTest {
     }
 
     public class TestUpdater extends Updater {
-        public TestUpdater(String updateBaseURL, String userAgent, int currentVersion, Path localUpdatesDir, Path pathToOrigJar) {
-            super(updateBaseURL, userAgent, currentVersion, localUpdatesDir, pathToOrigJar == null ? Paths.get("/1.jar") : pathToOrigJar, pubKeys, 2);
+        public TestUpdater(URI indexURL, String userAgent, Path localUpdatesDir, Path pathToOrigJar) {
+            super(indexURL, userAgent, localUpdatesDir, pathToOrigJar == null ? Paths.get("/1.jar") : pathToOrigJar, pubKeys, 2);
         }
 
         @Override
@@ -89,7 +86,7 @@ public class UpdaterTest {
 
     @Test(expected = FileNotFoundException.class)
     public void test404ForIndex() throws Exception {
-        updater = new TestUpdater(baseURL, "UnitTest", 1, dir, null);
+        updater = new TestUpdater(indexURL, "UnitTest", dir, null);
         updater.call();
     }
 
@@ -108,7 +105,7 @@ public class UpdaterTest {
             update.setVersion(verCursor);
             String serverPath = "/" + verCursor + ".jar.bpatch";
             verCursor++;
-            update.addUrls(baseURL + serverPath);
+            update.addUrls("http://localhost:" + HTTP_LOCAL_TEST_PORT + SERVER_PATH + serverPath);
             update.setPreHash(ByteString.copyFrom(hash[i++]));
             update.setPatchHash(ByteString.copyFrom(hash[i++]));
             update.setPostHash(ByteString.copyFrom(hash[i]));
@@ -132,7 +129,7 @@ public class UpdaterTest {
         byte[] b = "ignored".getBytes();
         configureIndex(b, b, b);
         try {
-            updater = new TestUpdater(baseURL, "UnitTest", 1, dir, null);
+            updater = new TestUpdater(indexURL, "UnitTest", dir, null);
             updater.call();
             fail();
         } catch (FileNotFoundException e) {
@@ -147,7 +144,7 @@ public class UpdaterTest {
         paths.put("/2.jar.bpatch", fakePatch);
         byte[] b = "wrong".getBytes();
         configureIndex(b, b, b);
-        updater = new TestUpdater(baseURL, "UnitTest", 1, dir, null);
+        updater = new TestUpdater(indexURL, "UnitTest", dir, null);
         updater.call();
     }
 
@@ -159,7 +156,7 @@ public class UpdaterTest {
         UFXProtocol.SignedUpdates.Builder builder = makeWrongIndex();
         builder.clearSignatures();
         paths.put("/index", builder.build().toByteArray());
-        updater = new TestUpdater(baseURL, "UnitTest", 1, dir, null);
+        updater = new TestUpdater(indexURL, "UnitTest", dir, null);
         updater.call();
     }
 
@@ -177,7 +174,7 @@ public class UpdaterTest {
         BigInteger evilKey = new BigInteger(256, new SecureRandom());
         builder.setSignatures(0, Crypto.signMessage("msg", evilKey));
         paths.put("/index", builder.build().toByteArray());
-        updater = new TestUpdater(baseURL, "UnitTest", 1, dir, null);
+        updater = new TestUpdater(indexURL, "UnitTest", dir, null);
         updater.call();
     }
 
@@ -189,7 +186,7 @@ public class UpdaterTest {
         UFXProtocol.SignedUpdates.Builder builder = makeWrongIndex();
         builder.setSignatures(0, Crypto.signMessage("hash from some other project", privKeys.get(0)));
         paths.put("/index", builder.build().toByteArray());
-        updater = new TestUpdater(baseURL, "UnitTest", 1, dir, null);
+        updater = new TestUpdater(indexURL, "UnitTest", dir, null);
         updater.call();
     }
 
@@ -201,7 +198,7 @@ public class UpdaterTest {
         UFXProtocol.SignedUpdates.Builder builder = makeWrongIndex();
         builder.setSignatures(0, "bzzzz");
         paths.put("/index", builder.build().toByteArray());
-        updater = new TestUpdater(baseURL, "UnitTest", 1, dir, null);
+        updater = new TestUpdater(indexURL, "UnitTest", dir, null);
         updater.call();
     }
 
@@ -230,7 +227,7 @@ public class UpdaterTest {
         paths.put("/3.jar.bpatch", bpatch2bits);
         configureIndex(sha256(readAllBytes(baseJar)), sha256(bpatch1bits), sha256(readAllBytes(jar2)),
                        sha256(readAllBytes(jar2)), sha256(bpatch2bits), sha256(readAllBytes(jar3)));
-        updater = new TestUpdater(baseURL, "UnitTest", 1, dir, baseJar);
+        updater = new TestUpdater(indexURL, "UnitTest", dir, baseJar);
         UpdateSummary summary = updater.call();
         assertEquals(80, workDone);
         assertEquals(80, workMax);
@@ -265,7 +262,7 @@ public class UpdaterTest {
         paths.put("/3.jar.bpatch", bpatch2bits);
         configureIndex(sha256(readAllBytes(jar1)), sha256(bpatch1bits), sha256(readAllBytes(baseJar)),
                        sha256(readAllBytes(baseJar)), sha256(bpatch2bits), sha256(readAllBytes(jar3)));
-        updater = new TestUpdater(baseURL, "UnitTest", 2, dir, baseJar);
+        updater = new TestUpdater(indexURL, "UnitTest", dir, baseJar);
         UpdateSummary summary = updater.call();
         byte[] bits3 = Files.readAllBytes(dir.resolve("3.jar"));
         assertArrayEquals(baseFile, bits3);
@@ -302,7 +299,7 @@ public class UpdaterTest {
         UpdateFX.pinToVersion(dir, 2);
         UpdateFX.pinToVersion(dir, 1);
 
-        updater = new TestUpdater(baseURL, "UnitTest", 1, dir, baseJar);
+        updater = new TestUpdater(indexURL, "UnitTest", dir, baseJar);
         UpdateSummary summary = updater.call();
         byte[] bits3 = Files.readAllBytes(dir.resolve("3.jar"));
         assertArrayEquals(baseFile, bits3);
@@ -313,12 +310,12 @@ public class UpdaterTest {
 
     @Test
     public void testBaseURLOverride() throws Exception {
-        baseURL = "https://www.example.com/updates";
+        indexURL = URI.create("https://www.example.com/updates/index");
         // Check the 404 for the update file is obtained (i.e. we made contact with the local server).
         byte[] b = "ignored".getBytes();
         configureIndex(b, b, b);
         try {
-            updater = new TestUpdater("http://localhost:18475/_updatefx/appname/", "UnitTest", 1, dir, null);
+            updater = new TestUpdater(URI.create("http://localhost:18475/_updatefx/appname/index"), "UnitTest", dir, null);
             updater.setOverrideURLs(true);
             updater.call();
             fail();
