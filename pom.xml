@@ -5,7 +5,7 @@
     <groupId>com.vinumeris</groupId>
     <artifactId>updatefx-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.5-SNAPSHOT</version>
+    <version>1.5</version>
 
     <modules>
         <module>examples</module>
