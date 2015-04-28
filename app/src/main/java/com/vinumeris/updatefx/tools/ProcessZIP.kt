@@ -50,5 +50,3 @@ public class ProcessZIP {
         }
     }
 }
-
-fun main(args: Array<String>) = ProcessZIP.process(Paths.get(args[0]), Paths.get(args[1]))
