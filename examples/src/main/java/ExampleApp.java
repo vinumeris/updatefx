@@ -21,7 +21,7 @@ import java.util.logging.FileHandler;
 
 public class ExampleApp extends Application {
     private static final Logger log = LoggerFactory.getLogger(ExampleApp.class);
-    public static int VERSION = 3;
+    public static int VERSION = 1;
 
     public static void main(String[] args) throws IOException {
         // We want to store updates in our app dir so must init that here.
@@ -56,7 +56,7 @@ public class ExampleApp extends Application {
 
         ProgressIndicator indicator = showGiantProgressWheel(primaryStage);
 
-        List<ECPoint> pubkeys = Crypto.decode("03BAB59EBCF0943981B2AA4EC05FA87915386BB59D60E67C5370977AED00D9E0DF");
+        List<ECPoint> pubkeys = Crypto.decode("020044E154894596A94EF649DC203358C27A310DDBE4D22646AC56BC8FB0BFBAFB");
         Updater updater = new Updater("http://localhost:8000/", "ExampleApp/" + VERSION, VERSION,
                 AppDirectory.dir(), UpdateFX.findCodePath(ExampleApp.class),
                 pubkeys, 1) {

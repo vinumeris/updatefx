@@ -18,6 +18,7 @@ UpdateFX is a small, simple automatic online update framework for JavaFX applica
   * The update metadata file (index) is signed using elliptic curve keys on the secp256k1 curve, thus the same
     infrastructure used to protect Bitcoin keys can be reused to protect app signing keys.
   * Threshold signing: you can require at least N of M public keys to sign an update index for it to be accepted (e.g. 2 of 2 or 3 of 5)
+  * Ability to use a [TREZOR](https://www.bitcointrezor.com/) to store the signing keys.
 
 Some things it does NOT provide include:
 
@@ -31,7 +32,6 @@ Some features it might provide in future could be:
 
 * Beta/alpha channels.
 * Experiments.
-* Ability to use a TREZOR to store the signing keys.
 
 UpdateFX is [Apache 2.0 licensed](http://www.apache.org/licenses/LICENSE-2.0.html) which means you can use it in
 proprietary projects if you want. There may in future be a "pro" version that has additional functionality, for a price.

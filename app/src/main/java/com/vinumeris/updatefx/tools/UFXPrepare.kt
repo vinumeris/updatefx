@@ -5,9 +5,9 @@ import com.google.protobuf.ByteString
 import com.vinumeris.updatefx.DeltaCalculator
 import com.vinumeris.updatefx.UFXProtocol
 import com.vinumeris.updatefx.Utils
-import joptsimple.ArgumentAcceptingOptionSpec
 import joptsimple.OptionParser
-import joptsimple.OptionSet
+import org.bitcoinj.core.ECKey
+import org.bitcoinj.core.Sha256Hash
 import org.bitcoinj.core.Wallet
 import org.bitcoinj.crypto.KeyCrypterScrypt
 import org.bitcoinj.params.MainNetParams
@@ -75,6 +75,7 @@ public class UFXPrepare {
             // If set, which version to start decompressing jars from and applying gzip to the resulting patch files.
             val gzipFromStr = parser.accepts("gzip-from").withRequiredArg().defaultsTo("-1")
             val changePassword = parser.accepts("change-password")
+            val trezor = parser.accepts("trezor").withOptionalArg()
             val onlyVer = parser.accepts("ver").withRequiredArg().ofType(javaClass<Int>())
             val options = parser.parse(*args)
 
@@ -123,20 +124,11 @@ public class UFXPrepare {
             } else {
                 Files.createDirectory(site)
             }
-            val params = MainNetParams.get()
-            val walletFile = working.resolve("wallet")
-            val wallet: Wallet
-            if (Files.exists(walletFile)) {
-                wallet = Wallet.loadFromFile(walletFile.toFile())
-                if (options has changePassword) {
-                    changePassword(wallet, walletFile)
-                    return
-                }
-            } else {
-                wallet = Wallet(params)
-                println("Creating a new key store (wallet), so you must select a signing key password.")
-                if (changePassword(wallet, walletFile)) return
-            }
+
+
+            val key = if (options.has(trezor)) signerFromTrezor(options.valueOf(trezor)) else signerFromWallet(working, options has changePassword)
+            if (key == null) return
+
             // Process the jars to remove timestamps and decompress. This does nothing if the zip is already processed.
             // Version ranges can be excluded for compatibility with old Lighthouse versions.
             // TODO: Once all testers are upgraded, remove the backwards compat stuff.
@@ -162,32 +154,72 @@ public class UFXPrepare {
                 }
             }
 
-            val updates = UFXProtocol.Updates.newBuilder()
+            val index = UFXProtocol.Updates.newBuilder()
             if (options.has(onlyVer)) {
                 val oldIndex = UFXProtocol.SignedUpdates.parseFrom(site.resolve("index").toFile().readBytes())
                 val v = options.valueOf(onlyVer)
                 val cur = strippedZipsDir.resolve("$v.jar")
                 val prev = strippedZipsDir.resolve("${v - 1}.jar")
                 val patch = DeltaCalculator.processFile(prev, cur, site.toAbsolutePath(), v, gzipFrom)
-                val oldUpdates = UFXProtocol.Updates.parseFrom(oldIndex.getUpdates())
-                updates.mergeFrom(oldUpdates)
-                updates.addUpdates(patchToProto(descriptions, gzipFrom, patch, url.values(options)))
+                val oldUpdates = UFXProtocol.Updates.parseFrom(oldIndex.getUpdates()).toBuilder()
+                for (update in oldUpdates.getUpdatesList()) {
+                    if (update.getVersion() != v)
+                        index.addUpdates(update)
+                }
+                index.addUpdates(patchToProto(descriptions, gzipFrom, patch, url.values(options)))
             } else {
                 // Generate the patch files.
                 val patches = DeltaCalculator.process(strippedZipsDir.toAbsolutePath(), site.toAbsolutePath(), gzipFrom)
                 // Build an index.
                 for (patch in patches) {
                     val proto = patchToProto(descriptions, gzipFrom, patch, url.values(options))
-                    updates.addUpdates(proto)
+                    index.addUpdates(proto)
                 }
             }
             // Sign it.
-            updates.setVersion(1)
+            index.setVersion(1)
             val signedUpdates = UFXProtocol.SignedUpdates.newBuilder()
-            val bits = updates.build().toByteArray()
-            val hash = Utils.sha256(bits)
-            var key = wallet.currentReceiveKey()
+            val bits = index.build().toByteArray()
+            val hash = Sha256Hash.create(bits)
 
+            val signature = key(hash)
+            val pubkey = ECKey.signedMessageToKey(hash.toString().toLowerCase(), signature).getPubKey()
+            signedUpdates.addSignatures(signature)
+            signedUpdates.setUpdates(ByteString.copyFrom(bits))
+            // Save the index to the sites dir
+            Files.write(site.resolve("index"), signedUpdates.build().toByteArray())
+            println("Signed with public key " + BaseEncoding.base16().encode(pubkey))
+            warnings.forEach { println(it) }
+        }
+
+        private fun signerFromTrezor(expectedKey: String?): ((Sha256Hash) -> String)? {
+            return { msg ->
+                try {
+                    signWithTrezor(msg, if (expectedKey != null) ECKey.fromPublicOnly(BaseEncoding.base16().decode(expectedKey)) else null)
+                } catch(e: Exception) {
+                    println(e)
+                    System.exit(1)
+                    ""
+                }
+            }
+        }
+
+        private fun signerFromWallet(working: Path, changePassword: Boolean): ((Sha256Hash) -> String)? {
+            val params = MainNetParams.get()
+            val walletFile = working.resolve("wallet")
+            val wallet: Wallet
+            if (Files.exists(walletFile)) {
+                wallet = Wallet.loadFromFile(walletFile.toFile())
+                if (changePassword) {
+                    changePassword(wallet, walletFile)
+                    return null
+                }
+            } else {
+                wallet = Wallet(params)
+                println("Creating a new key store (wallet), so you must select a signing key password.")
+                if (changePassword(wallet, walletFile)) return null
+            }
+            var key = wallet.currentReceiveKey()
             if (key.isEncrypted()) {
                 while (true) {
                     val password = askPassword()
@@ -199,14 +231,7 @@ public class UFXPrepare {
                     }
                 }
             }
-
-            val signature = key.signMessage(BaseEncoding.base16().encode(hash).toLowerCase())
-            signedUpdates.addSignatures(signature)
-            signedUpdates.setUpdates(ByteString.copyFrom(bits))
-            // Save the index to the sites dir
-            Files.write(site.resolve("index"), signedUpdates.build().toByteArray())
-            println("Signed with public key " + BaseEncoding.base16().encode(key.getPubKey()))
-            warnings.forEach { println(it) }
+            return { hash -> key.signMessage(hash.toString().toLowerCase()) }
         }
 
         private fun patchToProto(descriptions: HashMap<Int, UFXProtocol.UpdateDescription>, gzipFrom: Int, patch: DeltaCalculator.Result, urls: List<String>): UFXProtocol.Update.Builder {

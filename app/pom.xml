@@ -103,6 +103,16 @@
             <artifactId>kotlin-stdlib</artifactId>
             <version>${kotlin.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.multibit.hd.hardware</groupId>
+            <artifactId>trezor</artifactId>
+            <version>develop-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>1.7.10</version>
+        </dependency>
     </dependencies>
     <properties>
         <kotlin.version>0.11.91.1</kotlin.version>
