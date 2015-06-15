@@ -104,7 +104,7 @@ public class UFXPrepare {
             val gzipFrom = gzipFromStr.value(options).toInt()
             val working = Paths.get(options.nonOptionArguments().get(0) as String)
 
-            if (options.valuesOf<String>(url).isEmpty()) {
+            if (options.valuesOf(url).isEmpty()) {
                 println("You must specify at least one --url")
                 return
             }
@@ -236,7 +236,7 @@ public class UFXPrepare {
 
         private fun patchToProto(descriptions: HashMap<Int, UFXProtocol.UpdateDescription>, gzipFrom: Int, patch: DeltaCalculator.Result, urls: List<String>): UFXProtocol.Update.Builder {
             val update = UFXProtocol.Update.newBuilder()
-            val num = Integer.parseInt(patch.path.getFileName().toString().replaceAll("\\.jar\\.bpatch", ""))
+            val num = Integer.parseInt(patch.path.getFileName().toString().replace("\\.jar\\.bpatch".toRegex(), ""))
             update.setVersion(num)
             update.setPatchSize(patch.patchSize)
             update.setPreHash(ByteString.copyFrom(patch.preHash))
