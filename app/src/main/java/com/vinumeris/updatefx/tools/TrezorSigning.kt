@@ -50,7 +50,7 @@ PIN: """
 // Returns a base64 encoded signature.
 fun signWithTrezor(hash: Sha256Hash, expectedKey: ECKey? = null): String {
     // Use factory to statically bind the specific hardware wallet
-    val wallet = HardwareWallets.newUsbInstance(javaClass<TrezorV1HidHardwareWallet>(),
+    val wallet = HardwareWallets.newUsbInstance(TrezorV1HidHardwareWallet::class.java,
             Optional.absent(), Optional.absent(), Optional.absent())
 
     val client = TrezorHardwareWalletClient(wallet)
@@ -59,20 +59,20 @@ fun signWithTrezor(hash: Sha256Hash, expectedKey: ECKey? = null): String {
     val future: SettableFuture<String> = SettableFuture.create()
 
     val eventHandler = object {
-        private val msg = BaseEncoding.base16().encode(hash.getBytes()).toLowerCase()
+        private val msg = BaseEncoding.base16().encode(hash.bytes).toLowerCase()
         private var started = false
 
-        Subscribe fun onHardwareWalletEvent(event: HardwareWalletEvent) {
-            when (event.getEventType()) {
+        @Subscribe fun onHardwareWalletEvent(event: HardwareWalletEvent) {
+            when (event.eventType) {
                 SHOW_DEVICE_DETACHED -> {
-                    if (started && !future.isDone())
+                    if (started && !future.isDone)
                         future.setException(DeviceDisconnectedException())
                     else if (!started)
                         println("Waiting for TREZOR to be plugged in ...")
                 }
 
                 SHOW_DEVICE_READY -> {
-                    if (!service.isWalletPresent()) {
+                    if (!service.isWalletPresent) {
                         println("You need to have created a wallet on your TREZOR first")
                         future.setException(NoKeysOnDeviceException())
                         return
@@ -86,9 +86,9 @@ fun signWithTrezor(hash: Sha256Hash, expectedKey: ECKey? = null): String {
 
                 SHOW_PIN_ENTRY -> {
                     print(PIN_MESSAGE)
-                    val matrixReq = event.getMessage().get() as PinMatrixRequest
+                    val matrixReq = event.message.get() as PinMatrixRequest
                     val keyboard = Scanner(System.`in`)
-                    if (matrixReq.getPinMatrixRequestType() != PinMatrixRequestType.CURRENT) {
+                    if (matrixReq.pinMatrixRequestType != PinMatrixRequestType.CURRENT) {
                         future.setException(UnexpectedPINRequestException())
                         return
                     }
@@ -97,8 +97,8 @@ fun signWithTrezor(hash: Sha256Hash, expectedKey: ECKey? = null): String {
                 }
 
                 MESSAGE_SIGNATURE -> {
-                    val sig = event.getMessage().get() as MessageSignature
-                    val b64sig = Base64.getEncoder().encodeToString(sig.getSignature())
+                    val sig = event.message.get() as MessageSignature
+                    val b64sig = Base64.getEncoder().encodeToString(sig.signature)
                     val key = ECKey.signedMessageToKey(msg, b64sig)
                     if (expectedKey != null && key != expectedKey)
                         future.setException(MismatchedKeyException())

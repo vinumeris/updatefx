@@ -22,7 +22,6 @@ import java.util.HashMap
 import java.util.jar.JarFile
 import java.util.logging.Level
 import java.util.logging.LogManager
-import kotlin.platform.platformStatic
 
 /**
  * This app takes a working directory that contains a subdir called "builds", containing each version of the app
@@ -35,37 +34,37 @@ public class UFXPrepare {
     companion object {
         private fun printIndex(file: File) {
             val proto = UFXProtocol.SignedUpdates.parseFrom(file.readBytes())
-            val updates = UFXProtocol.Updates.parseFrom(proto.getUpdates())
+            val updates = UFXProtocol.Updates.parseFrom(proto.updates)
 
-            println("UpdateFX index (v${updates.getVersion()}): ${updates.getUpdatesCount()} updates defined:")
+            println("UpdateFX index (v${updates.version}): ${updates.updatesCount} updates defined:")
             println()
 
-            for (update in updates.getUpdatesList()) {
-                val version = update.getVersion()
-                val patchSize = update.getPatchSize()
-                val gzipped = if (update.getGzipped()) " gzipped" else ""
+            for (update in updates.updatesList) {
+                val version = update.version
+                val patchSize = update.patchSize
+                val gzipped = if (update.gzipped) " gzipped" else ""
                 print("Update $version ($patchSize bytes${gzipped})")
-                if (update.getDescriptionCount() > 0) {
+                if (update.descriptionCount > 0) {
                     val desc = update.getDescription(0)
-                    println(": ${desc.getOneLiner()}")
-                    println(desc.getDescription())
+                    println(": ${desc.oneLiner}")
+                    println(desc.description)
                 }
                 println()
-                val preHash = BaseEncoding.base16().encode(update.getPreHash().toByteArray()).toLowerCase()
-                val patchHash = BaseEncoding.base16().encode(update.getPatchHash().toByteArray()).toLowerCase()
-                val postHash = BaseEncoding.base16().encode(update.getPostHash().toByteArray()).toLowerCase()
+                val preHash = BaseEncoding.base16().encode(update.preHash.toByteArray()).toLowerCase()
+                val patchHash = BaseEncoding.base16().encode(update.patchHash.toByteArray()).toLowerCase()
+                val postHash = BaseEncoding.base16().encode(update.postHash.toByteArray()).toLowerCase()
                 println("PreHash:     $preHash")
                 println("Patch hash:  $patchHash")
                 println("PostHash:    $postHash")
-                for (url in update.getUrlsList()) {
+                for (url in update.urlsList) {
                     println("  $url")
                 }
-                if (update != updates.getUpdatesList().last())
+                if (update != updates.updatesList.last())
                     println("----------")
             }
         }
 
-        platformStatic
+        @JvmStatic
         public fun main(args: Array<String>) {
             val parser = OptionParser()
             // Base URL where the patches will be served. Can be specified multiple times.
@@ -76,14 +75,14 @@ public class UFXPrepare {
             val gzipFromStr = parser.accepts("gzip-from").withRequiredArg().defaultsTo("-1")
             val changePassword = parser.accepts("change-password")
             val trezor = parser.accepts("trezor").withOptionalArg()
-            val onlyVer = parser.accepts("ver").withRequiredArg().ofType(javaClass<Int>())
+            val onlyVer = parser.accepts("ver").withRequiredArg().ofType(Int::class.java)
             val options = parser.parse(*args)
 
             if (options.has("debuglog")) {
                 BriefLogFormatter.init()
             } else {
                 // Disable logspam unless there is a flag.
-                LogManager.getLogManager().getLogger("").setLevel(Level.SEVERE)
+                LogManager.getLogManager().getLogger("").level = Level.SEVERE
             }
 
             if (options.has(printIndex)) {
@@ -161,9 +160,9 @@ public class UFXPrepare {
                 val cur = strippedZipsDir.resolve("$v.jar")
                 val prev = strippedZipsDir.resolve("${v - 1}.jar")
                 val patch = DeltaCalculator.processFile(prev, cur, site.toAbsolutePath(), v, gzipFrom)
-                val oldUpdates = UFXProtocol.Updates.parseFrom(oldIndex.getUpdates()).toBuilder()
-                for (update in oldUpdates.getUpdatesList()) {
-                    if (update.getVersion() != v)
+                val oldUpdates = UFXProtocol.Updates.parseFrom(oldIndex.updates).toBuilder()
+                for (update in oldUpdates.updatesList) {
+                    if (update.version != v)
                         index.addUpdates(update)
                 }
                 index.addUpdates(patchToProto(descriptions, gzipFrom, patch, url.values(options)))
@@ -183,7 +182,7 @@ public class UFXPrepare {
             val hash = Sha256Hash.create(bits)
 
             val signature = key(hash)
-            val pubkey = ECKey.signedMessageToKey(hash.toString().toLowerCase(), signature).getPubKey()
+            val pubkey = ECKey.signedMessageToKey(hash.toString().toLowerCase(), signature).pubKey
             signedUpdates.addSignatures(signature)
             signedUpdates.setUpdates(ByteString.copyFrom(bits))
             // Save the index to the sites dir
@@ -220,11 +219,11 @@ public class UFXPrepare {
                 if (changePassword(wallet, walletFile)) return null
             }
             var key = wallet.currentReceiveKey()
-            if (key.isEncrypted()) {
+            if (key.isEncrypted) {
                 while (true) {
                     val password = askPassword()
                     try {
-                        key = key.decrypt(wallet.getKeyCrypter().deriveKey(password))
+                        key = key.decrypt(wallet.keyCrypter.deriveKey(password))
                         break
                     } catch (e: Exception) {
                         println("Password is incorrect, please try again")
@@ -236,7 +235,7 @@ public class UFXPrepare {
 
         private fun patchToProto(descriptions: HashMap<Int, UFXProtocol.UpdateDescription>, gzipFrom: Int, patch: DeltaCalculator.Result, urls: List<String>): UFXProtocol.Update.Builder {
             val update = UFXProtocol.Update.newBuilder()
-            val num = Integer.parseInt(patch.path.getFileName().toString().replace("\\.jar\\.bpatch".toRegex(), ""))
+            val num = Integer.parseInt(patch.path.fileName.toString().replace("\\.jar\\.bpatch".toRegex(), ""))
             update.setVersion(num)
             update.setPatchSize(patch.patchSize)
             update.setPreHash(ByteString.copyFrom(patch.preHash))
@@ -259,7 +258,7 @@ public class UFXPrepare {
         }
 
         private fun changePassword(wallet: Wallet, walletFile: Path): Boolean {
-            if (wallet.isEncrypted()) {
+            if (wallet.isEncrypted) {
                 println("Please enter the old password")
                 val oldPassword = askPassword()
                 wallet.decrypt(oldPassword)
@@ -287,8 +286,8 @@ public class UFXPrepare {
         }
 
         private fun processBuild(path: Path, gzipFrom: Int, descriptions: HashMap<Int, UFXProtocol.UpdateDescription>, strippedZipsDir: Path, warnings: MutableList<String>) {
-            val v = path.getFileName().toString().replace(".jar", "").toInt()
-            val processed = strippedZipsDir.resolve(path.getFileName())
+            val v = path.fileName.toString().replace(".jar", "").toInt()
+            val processed = strippedZipsDir.resolve(path.fileName)
             Files.deleteIfExists(processed)
             if (v >= gzipFrom)
                 ProcessZIP.process(path, processed)

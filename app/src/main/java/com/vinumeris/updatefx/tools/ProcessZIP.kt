@@ -22,9 +22,9 @@ public class ProcessZIP {
                 ZipInputStream(BufferedInputStream(Files.newInputStream(zipPath))).use { input ->
                     var printed = false
                     while (true) {
-                        val entry = input.getNextEntry() ?: break
+                        val entry = input.nextEntry ?: break
                         // Skip if already processed.
-                        if (entry.getLastModifiedTime().toMillis() == 0L) {
+                        if (entry.lastModifiedTime.toMillis() == 0L) {
                             skipped = true
                             break
                         }
