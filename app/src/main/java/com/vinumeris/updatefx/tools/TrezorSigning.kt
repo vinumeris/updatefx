@@ -105,6 +105,8 @@ fun signWithTrezor(hash: Sha256Hash, expectedKey: ECKey? = null): String {
                     else
                         future.set(b64sig)
                 }
+
+                else -> {} // Do nothing
             }
         }
     }
@@ -114,7 +116,7 @@ fun signWithTrezor(hash: Sha256Hash, expectedKey: ECKey? = null): String {
     try {
         return future.get()
     } catch (e: ExecutionException) {
-        throw e.getCause()!!
+        throw e.cause!!
     } finally {
         service.stopAndWait()
     }

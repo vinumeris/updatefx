@@ -125,7 +125,10 @@ public class UFXPrepare {
             }
 
 
-            val key = if (options.has(trezor)) signerFromTrezor(options.valueOf(trezor)) else signerFromWallet(working, options has changePassword)
+            val key = if (options.has(trezor))
+                signerFromTrezor(options.valueOf(trezor))
+            else
+                signerFromWallet(working, options.has(changePassword))
             if (key == null) return
 
             // Process the jars to remove timestamps and decompress. This does nothing if the zip is already processed.
@@ -302,11 +305,11 @@ public class UFXPrepare {
             jar.getInputStream(entry).use { stream ->
                 stream.reader(Charsets.UTF_8).useLines { lines ->
                     val l = lines.toList()
-                    if (l.size() > 0) {
+                    if (l.size > 0) {
                         val desc = UFXProtocol.UpdateDescription.newBuilder()
                         desc.setOneLiner(l.first())
-                        if (l.size() > 1)
-                            desc.setDescription(l.drop(1).join("\n"))
+                        if (l.size > 1)
+                            desc.setDescription(l.drop(1).joinToString("\n"))
                         descriptions.put(v, desc.build())
                     } else {
                         warnings.add("WARNING: Update $v has an empty description file!")
