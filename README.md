@@ -44,7 +44,7 @@ Maven coordinates
 
 | Group ID            | Artifact ID | Version |
 | :-----------------: | :---------: | :-----: |
-| com.vinumeris       | updatefx    | 1.2     |
+| com.vinumeris       | updatefx    | 1.5     |
 
 How to use: Step 1
 ------------------
